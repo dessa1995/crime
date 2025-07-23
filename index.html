@@ -289,7 +289,6 @@
             border-left: 3px solid var(--danger-color);
         }
         
-        /* 추가: 몬스터 등장 알림 */
         #temp-message-overlay {
             position: absolute;
             top: 50%;
@@ -391,7 +390,6 @@
                 </div>
             </div>
             <div id="monster-info-display"></div>
-            <!-- 추가: 임시 메시지 오버레이 -->
             <div id="temp-message-overlay"></div>
             <canvas id="game-canvas"></canvas>
             <div id="quiz-container">
@@ -411,6 +409,9 @@
             <p id="message-text"></p>
             <button id="message-ok-btn" class="btn">확인</button>
         </div>
+        
+        <!-- 오디오 태그 (CORS 문제로 재생되지 않을 수 있음) -->
+        <audio id="bgm-audio" src="https://raw.githubusercontent.com/dessa1995/crime/main/bbgm.mp3" loop></audio>
 
     </div>
 
@@ -431,6 +432,7 @@
         const messageOkBtn = document.getElementById('message-ok-btn');
         const monsterInfoDisplay = document.getElementById('monster-info-display');
         const tempMessageOverlay = document.getElementById('temp-message-overlay');
+        const bgmAudioElement = document.getElementById('bgm-audio');
 
         let audioContext;
         let bgmSource;
@@ -438,7 +440,7 @@
         let isAudioReady = false;
 
         const assets = {
-            bgm: 'https://github.com/dessa1995/crime/raw/refs/heads/main/bbgm.mp3',
+            bgm: 'https://raw.githubusercontent.com/dessa1995/crime/main/bbgm.mp3',
             monsters: {
                 '하': 'https://raw.githubusercontent.com/dessa1995/crime/main/monster1.png',
                 '중': 'https://raw.githubusercontent.com/dessa1995/crime/main/monster2.png',
@@ -456,7 +458,7 @@
 
         let gameState = {};
         let dungeonPillars = [];
-        let effectParticles = []; // 수정: 모든 이펙트 파티클을 관리
+        let effectParticles = [];
 
         // 퀴즈 데이터 (이전과 동일)
         const quizzes = [
@@ -533,17 +535,21 @@
             await Promise.all(imagePromises);
         }
         
-        async function initAndPlayBGM() {
-            if (isAudioReady) {
-                 if (bgmBuffer && audioContext && (!bgmSource || bgmSource.playbackState === bgmSource.FINISHED_STATE)) {
-                    bgmSource = audioContext.createBufferSource();
-                    bgmSource.buffer = bgmBuffer;
-                    bgmSource.loop = true;
-                    bgmSource.connect(audioContext.destination);
-                    bgmSource.start(0);
+        function initAndPlayBGM() {
+            if (bgmAudioElement.paused) {
+                const playPromise = bgmAudioElement.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.error("오디오 자동재생 실패. 사용자 상호작용이 필요합니다.", error);
+                        // Web Audio API로 재시도 (이것도 실패할 수 있음)
+                        initAndPlayBGMWithWebAudio();
+                    });
                 }
-                return;
             }
+        }
+        
+        async function initAndPlayBGMWithWebAudio() {
+            if (isAudioReady) return;
             try {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
                 audioContext = new AudioContext();
@@ -553,9 +559,15 @@
                 const arrayBuffer = await response.arrayBuffer();
                 bgmBuffer = await audioContext.decodeAudioData(arrayBuffer);
                 isAudioReady = true;
-                initAndPlayBGM();
+                
+                const source = audioContext.createBufferSource();
+                source.buffer = bgmBuffer;
+                source.loop = true;
+                source.connect(audioContext.destination);
+                source.start(0);
+                bgmSource = source;
             } catch (e) {
-                console.error("오디오 초기화 또는 재생 오류:", e);
+                console.error("Web Audio API를 통한 오디오 초기화/재생 오류:", e);
             }
         }
 
@@ -688,7 +700,7 @@
             quizContainer.style.display = 'none';
             monsterInfoDisplay.style.display = 'none';
             gameState.animation = { type: 'attack', progress: 0, duration: 1000 };
-            effectParticles = []; // 파티클 초기화
+            effectParticles = [];
 
             if (gameState.isBossFight) {
                 if (gameState.difficulty === '상' && gameState.bossStage === 0) {
@@ -831,13 +843,12 @@
             let yOffset = bobbing ? Math.sin(Date.now() / 200) * 5 : 0;
             const xPos = canvas.width * 0.2;
             
-            // 수정: 게임 오버/클리어 애니메이션
             if (gameState.animation.type === 'game-clear') {
-                yOffset += Math.sin(Date.now() / 150) * 10; // 기뻐서 깡총깡총
+                yOffset += Math.abs(Math.sin(Date.now() / 150) * -15);
             } else if (gameState.animation.type === 'game-over') {
                 ctx.save();
                 ctx.translate(xPos + size / 2, canvas.height * 0.6 - size / 2 + yOffset);
-                ctx.rotate(Math.sin(Date.now() / 500) * 0.1); // 슬퍼서 절레절레
+                ctx.rotate(Math.sin(Date.now() / 500) * 0.1);
                 ctx.drawImage(img, -size / 2, -size / 2, size, size);
                 ctx.restore();
                 return;
@@ -889,7 +900,7 @@
                         startY
                     );
                     ctx.stroke();
-                    if (level > 2) { // 레벨이 높으면 추가 검기
+                    if (level > 2) {
                          ctx.strokeStyle = `rgba(255, 223, 0, ${0.7 - progress})`;
                          ctx.lineWidth = 3 + level;
                          ctx.beginPath();
@@ -904,7 +915,7 @@
                     }
                     ctx.restore();
                 } else if (gameState.player.class === '마법사') {
-                    if (effectParticles.length === 0) { // 공격 시작 시 파티클 생성
+                    if (effectParticles.length === 0) {
                         for (let i = 0; i < 5 + level * 3; i++) {
                             effectParticles.push({
                                 type: 'ice',
@@ -925,15 +936,12 @@
                     ctx.fillRect(pillar.x, pillar.y, pillar.width, pillar.height);
                     pillar.x -= (canvas.width / 1.5) * (deltaTime / 1000);
                 });
-            } else if (gameState.animation.type === 'game-clear') {
-                // 색종이 효과
             } else if (gameState.animation.type === 'game-over') {
                 const progress = gameState.animation.progress / gameState.animation.duration;
                 ctx.fillStyle = `rgba(0, 0, 0, ${progress * 0.7})`;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                // 흑백 효과
-                ctx.globalCompositeOperation = 'color';
-                ctx.fillStyle = `rgba(128, 128, 128, ${progress})`;
+                ctx.globalCompositeOperation = 'saturation';
+                ctx.fillStyle = 'black';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.globalCompositeOperation = 'source-over';
             }
@@ -950,7 +958,7 @@
                 }
 
                 ctx.save();
-                ctx.globalAlpha = p.life;
+                ctx.globalAlpha = p.life > 0 ? p.life : 0;
                 ctx.translate(p.x, p.y);
                 
                 if (p.type === 'ice') {
@@ -959,10 +967,12 @@
                     ctx.strokeStyle = `rgba(255, 255, 255, ${p.life})`;
                     ctx.lineWidth = 2;
                     ctx.beginPath();
-                    ctx.moveTo(0, -p.size);
-                    ctx.lineTo(p.size * 0.8, 0);
-                    ctx.lineTo(0, p.size);
-                    ctx.lineTo(-p.size * 0.8, 0);
+                    for (let i = 0; i < 5; i++) {
+                        let angle = (i / 5) * Math.PI * 2;
+                        ctx.lineTo(Math.cos(angle) * p.size, Math.sin(angle) * p.size);
+                        angle += (0.5 / 5) * Math.PI * 2;
+                        ctx.lineTo(Math.cos(angle) * p.size * 0.5, Math.sin(angle) * p.size * 0.5);
+                    }
                     ctx.closePath();
                     ctx.fill();
                     ctx.stroke();
@@ -979,7 +989,7 @@
         function gameLoop(timestamp) {
             if (gameState.currentScreen !== 'game-screen') return;
 
-            const deltaTime = timestamp - lastTime;
+            const deltaTime = (timestamp - lastTime) || 0;
             lastTime = timestamp;
 
             if (gameState.animation.type) {
