@@ -144,6 +144,12 @@
             background-color: #7f8c8d;
             cursor: not-allowed;
             box-shadow: 0 4px #616a6b;
+            opacity: 0.6;
+        }
+        
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.9em;
         }
 
         #character-selection-screen .char-options {
@@ -185,6 +191,33 @@
             text-align: center;
         }
 
+        #difficulty-selection-screen #difficulty-char-status {
+            background-color: rgba(0,0,0,0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid var(--primary-color);
+            margin-bottom: 20px;
+        }
+        #difficulty-selection-screen #difficulty-char-status h3 {
+            margin: 0 0 5px 0;
+        }
+        #difficulty-selection-screen #difficulty-char-status p {
+            margin: 0;
+            color: #bdc3c7;
+        }
+
+        #difficulty-selection-screen .difficulty-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .difficulty-desc {
+            font-size: 0.9em;
+            color: #bdc3c7;
+            margin-top: 8px;
+            max-width: 200px;
+        }
+
         #game-screen {
             justify-content: flex-start;
             padding: 0;
@@ -199,12 +232,28 @@
             box-sizing: border-box;
             font-size: 1.1em;
             z-index: 10;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        #status-bar #player-info, #status-bar #lives-info {
+        #status-bar > div {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        #progress-display {
+            font-size: 0.9em;
+            color: #bdc3c7;
+            text-align: center;
+            width: 100%;
+            order: 2; /* Flexbox order */
+        }
+        @media (min-width: 768px) {
+            #progress-display {
+                width: auto;
+                order: 0;
+            }
+        }
+
         #game-canvas {
             position: absolute;
             top: 0;
@@ -219,65 +268,95 @@
             left: 0;
             width: 100%;
             background-color: rgba(44, 42, 74, 0.9);
-            padding: 20px;
+            padding: 15px;
             box-sizing: border-box;
             border-top: 3px solid var(--primary-color);
             display: none;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
             z-index: 10;
+            max-height: 40%;
         }
         #quiz-case {
-            font-size: 1.2em;
-            text-align: center;
-            max-height: 120px;
+            font-size: 1em;
+            text-align: left;
+            width: 100%;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            flex-grow: 1;
             overflow-y: auto;
         }
         #q1-options, #q2-options {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             width: 100%;
+            flex-wrap: wrap;
         }
         #q2-options {
             flex-direction: column;
             align-items: center;
+            flex-wrap: nowrap;
         }
         .quiz-btn {
             width: 45%;
             max-width: 300px;
-            padding: 15px;
+            padding: 12px;
             font-size: 1em;
         }
         .q2-btn {
-             width: 90%;
-             max-width: 600px;
+             width: 95%;
+             max-width: 620px;
              text-align: left;
+             font-size: 0.85em;
+             padding: 8px;
         }
         
-        #message-modal {
+        .modal-overlay {
             position: absolute;
-            top: 30%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99;
+        }
+        .modal-content {
             background-color: var(--surface-color);
             padding: 30px;
             border-radius: 15px;
             border: 3px solid var(--accent-color);
             box-shadow: 0 0 20px rgba(0,0,0,0.7);
-            z-index: 100;
             text-align: center;
-            display: none;
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
         }
         #message-text {
             font-size: 1.5em;
             margin-bottom: 20px;
         }
+        #instructions-modal .modal-content {
+            text-align: left;
+        }
+        #instructions-modal h3 {
+            margin-top: 0;
+        }
+        #instructions-modal ul {
+            padding-left: 20px;
+        }
+        #instructions-modal li {
+            margin-bottom: 10px;
+        }
         
         #monster-info-display {
             position: absolute;
-            top: 60px;
+            top: 70px; /* status bar height + margin */
             right: 20px;
             background-color: rgba(0,0,0,0.6);
             padding: 10px 15px;
@@ -309,7 +388,13 @@
             opacity: 1;
             visibility: visible;
         }
-
+        
+        #fixed-buttons-container {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            z-index: 120;
+        }
 
         /* Responsive Design */
         @media (max-width: 600px) {
@@ -318,7 +403,7 @@
             #character-selection-screen .char-options { flex-direction: column; }
             .char-card img { width: 80px; height: 80px; }
             #status-bar { font-size: 0.9em; padding: 8px 15px; }
-            #monster-info-display { top: 50px; font-size: 0.9em; }
+            #monster-info-display { top: 70px; font-size: 0.9em; }
             #quiz-case { font-size: 1em; }
             .quiz-btn { width: 80%; }
             #temp-message-overlay { font-size: 1.5em; }
@@ -367,26 +452,39 @@
         
         <!-- 난이도 선택 화면 -->
         <div id="difficulty-selection-screen" class="screen">
+            <div id="difficulty-char-status"></div>
             <h2>난이도 선택</h2>
             <div class="button-group">
-                <button class="btn difficulty-btn" data-difficulty="하">하</button>
-                <button class="btn difficulty-btn" data-difficulty="중">중</button>
-                <button class="btn difficulty-btn" data-difficulty="상">상</button>
+                <div class="difficulty-option">
+                    <button class="btn difficulty-btn" data-difficulty="하">하</button>
+                    <p class="difficulty-desc">5문제 정답 시 보스 등장</p>
+                </div>
+                <div class="difficulty-option">
+                    <button class="btn difficulty-btn" data-difficulty="중">중</button>
+                    <p class="difficulty-desc">8문제 정답 시 보스 등장</p>
+                </div>
+                <div class="difficulty-option">
+                    <button class="btn difficulty-btn" data-difficulty="상">상</button>
+                    <p class="difficulty-desc">10문제 정답 시 보스 등장</p>
+                </div>
             </div>
              <div class="button-group">
                  <button id="save-game-btn" class="btn">게임 저장</button>
+                 <button id="change-character-btn" class="btn">캐릭터 변경</button>
             </div>
         </div>
 
         <!-- 메인 게임 화면 -->
         <div id="game-screen" class="screen">
             <div id="status-bar">
-                <div id="player-info">
+                <div id="player-info-left">
                     <span id="status-name"></span> | LV.<span id="status-level"></span>
                 </div>
-                <div id="lives-info">
+                <div id="progress-display"></div>
+                <div id="player-info-right">
                     <span>목숨:</span>
                     <span id="status-lives"></span>
+                    <button id="back-to-difficulty-btn" class="btn btn-small">메인으로</button>
                 </div>
             </div>
             <div id="monster-info-display"></div>
@@ -395,8 +493,8 @@
             <div id="quiz-container">
                 <div id="quiz-case"></div>
                 <div id="q1-options">
-                    <button class="btn quiz-btn" data-answer="O">O (성립한다)</button>
-                    <button class="btn quiz-btn" data-answer="X">X (성립하지 않는다)</button>
+                    <button class="btn quiz-btn" data-answer="O">O (맞다)</button>
+                    <button class="btn quiz-btn" data-answer="X">X (틀리다)</button>
                 </div>
                 <div id="q2-options" style="display: none;">
                     <!-- 4지선다 버튼은 동적으로 생성됩니다. -->
@@ -405,12 +503,40 @@
         </div>
         
         <!-- 메시지 모달 -->
-        <div id="message-modal">
-            <p id="message-text"></p>
-            <button id="message-ok-btn" class="btn">확인</button>
+        <div id="message-modal" class="modal-overlay">
+            <div class="modal-content">
+                <p id="message-text"></p>
+                <button id="message-ok-btn" class="btn">확인</button>
+            </div>
         </div>
         
-        <!-- 오디오 태그 (CORS 문제로 재생되지 않을 수 있음) -->
+        <!-- 게임 설명 모달 -->
+        <div id="instructions-modal" class="modal-overlay">
+            <div class="modal-content">
+                <h3>게임 설명</h3>
+                <ul>
+                    <li><strong>목표:</strong> 형법 퀴즈를 풀어 몬스터를 물리치고 던전을 클리어하세요!</li>
+                    <li><strong>게임 흐름:</strong>
+                        <ol>
+                            <li>캐릭터 생성 후, 원하는 난이도를 선택하여 게임을 시작합니다.</li>
+                            <li>몬스터가 등장하면 퀴즈가 출제됩니다.</li>
+                            <li>퀴즈를 맞혀야 몬스터에게 데미지를 줄 수 있습니다.</li>
+                            <li>틀리면 목숨이 1개 줄어듭니다. 목숨이 0이 되면 게임 오버!</li>
+                            <li>난이도별 정답 수를 채우면 강력한 보스가 등장합니다.</li>
+                        </ol>
+                    </li>
+                    <li><strong>레벨업:</strong> 각 난이도의 보스를 물리칠 때마다 레벨이 오르며, 공격 이펙트가 화려해집니다.</li>
+                    <li><strong>저장/불러오기:</strong> '게임 저장' 또는 '메인으로' 버튼으로 현재 레벨과 클리어 정보를 저장할 수 있습니다. 메인 화면의 '불러오기'로 이어할 수 있습니다.</li>
+                </ul>
+                <button id="instructions-close-btn" class="btn">닫기</button>
+            </div>
+        </div>
+
+        <div id="fixed-buttons-container">
+            <button id="instructions-btn" class="btn btn-small">게임 설명</button>
+        </div>
+
+        <!-- 오디오 태그 -->
         <audio id="bgm-audio" src="https://raw.githubusercontent.com/dessa1995/crime/main/bbgm.mp3" loop></audio>
 
     </div>
@@ -429,10 +555,11 @@
 
         const messageModal = document.getElementById('message-modal');
         const messageText = document.getElementById('message-text');
-        const messageOkBtn = document.getElementById('message-ok-btn');
+        let messageOkBtn = document.getElementById('message-ok-btn'); // const에서 let으로 변경하여 오류 수정
         const monsterInfoDisplay = document.getElementById('monster-info-display');
         const tempMessageOverlay = document.getElementById('temp-message-overlay');
         const bgmAudioElement = document.getElementById('bgm-audio');
+        const progressDisplay = document.getElementById('progress-display');
 
         let audioContext;
         let bgmSource;
@@ -460,33 +587,83 @@
         let dungeonPillars = [];
         let effectParticles = [];
 
-        // 퀴즈 데이터 (이전과 동일)
+        // 퀴즈 데이터 (타입 추가)
         const quizzes = [
-            { id: 1, difficulty: '하', case: "갑은 잃어버린 자신의 스마트폰인 줄 알고 길가에 떨어진 스마트폰을 주워갔습니다. 그러나 그 스마트폰은 을의 스마트폰이었습니다.", q1: 'X', q2: ["갑에게 절도의 고의가 없었기 때문이다.", "을에게 피해자의 승낙이 있었기 때문이다.", "갑이 14세 미만이었기 때문이다.", "갑의 행위는 사회상규에 위배되지 않기 때문이다."], answerIndex: 0 },
-            { id: 2, difficulty: '하', case: "13세인 갑이 친구의 가방에서 몰래 지갑을 훔쳤습니다.", q1: 'X', q2: ["절도죄의 구성 요건에 해당하지 않기 때문이다.", "갑이 심신 상실 상태였기 때문이다.", "갑이 14세 미만의 형사 미성년자이므로 책임이 조각되기 때문이다.", "피해자의 승낙이 있었기 때문이다."], answerIndex: 2 },
-            { id: 3, difficulty: '하', case: "갑은 자신에게 주먹을 휘두르려는 을의 공격을 막기 위해 을의 팔을 붙잡아 저지했습니다.", q1: 'X', q2: ["갑의 행위가 현재의 부당한 침해로부터 자신을 방위하기 위한 정당방위에 해당하여 위법성이 조각되기 때문이다.", "갑이 심신 미약 상태였기 때문이다.", "폭행죄의 구성 요건에 해당하지 않기 때문이다.", "피해자가 상해를 입지 않았기 때문이다."], answerIndex: 0 },
-            { id: 4, difficulty: '하', case: "갑은 인터넷에서 불법 도박 사이트를 운영하여 많은 사람으로부터 돈을 가로챘습니다.", q1: 'O', q2: ["갑의 행위는 사회적 유해성이 없기 때문이다.", "법률에 명확하게 규정된 범죄 행위가 아니기 때문이다.", "갑의 행위가 형법에 규정된 구성 요건에 해당하고, 위법성 및 책임 조각 사유가 없으므로 범죄가 성립하기 때문이다.", "도박 행위는 형벌이 부과되지 않는 행위이기 때문이다."], answerIndex: 2 },
-            { id: 5, difficulty: '하', case: "갑이 실수로 옆에 있던 친구의 스마트폰을 떨어뜨려 액정을 깨뜨렸습니다.", q1: 'X', q2: ["재물손괴죄의 구성 요건에 해당하지만 위법성이 조각되기 때문이다.", "고의가 없었지만 과실로 인한 행위는 처벌 대상이기 때문이다.", "형법은 고의범을 원칙으로 하고, 과실에 의한 재물손괴에 대한 처벌 규정이 없기 때문에 재물손괴죄가 성립하지 않는다.", "친구의 재산이므로 재물손괴죄가 성립하지 않는다."], answerIndex: 2 },
-            { id: 6, difficulty: '하', case: "구조대원 갑이 화재 현장에서 불이 붙은 건물을 부수고 들어가 인명을 구조하는 과정에서 건물 일부가 파손되었습니다.", q1: 'X', q2: ["갑의 행위는 공공의 이익을 위한 행위로, 사회상규에 위배되지 않는 정당행위에 해당하여 위법성이 조각되기 때문이다.", "갑에게 재물손괴의 고의가 없었기 때문이다.", "피해자의 승낙이 있었기 때문이다.", "갑의 행위가 긴급 피난에 해당하기 때문이다."], answerIndex: 0 },
-            { id: 7, difficulty: '하', case: "갑이 친구의 지갑을 훔칠 목적으로 주머니에서 지갑을 꺼내 자신의 가방에 넣었습니다.", q1: 'O', q2: ["갑의 행위가 절도죄의 구성 요건에 해당하고 위법성 및 책임이 인정되기 때문이다.", "아직 지갑을 사용하지 않았기 때문에 범죄가 성립하지 않는다.", "친구의 재산이므로 절도죄가 성립하지 않는다.", "피해자가 지갑을 돌려받았기 때문이다."], answerIndex: 0 },
-            { id: 8, difficulty: '하', case: "은행원 갑은 강도가 칼로 가족을 해치겠다고 협박하여 어쩔 수 없이 금고문을 열어주었습니다.", q1: 'X', q2: ["갑의 행위는 긴급 피난에 해당하여 위법성이 조각되기 때문이다.", "갑이 강도의 협박에 의해 강요된 행위를 한 것이므로 책임이 조각되어 범죄가 성립하지 않기 때문이다.", "강도 행위는 갑이 아닌 강도의 책임이므로 범죄가 성립하지 않는다.", "금고문 개방이 은행원의 직무에 해당하기 때문이다."], answerIndex: 1 },
-            { id: 9, difficulty: '하', case: "갑은 맹렬히 자신을 공격하려는 맹견을 피하기 위해 부득이하게 돌을 던져 맹견에게 상처를 입혔습니다.", q1: 'X', q2: ["갑에게 맹견을 해치려는 고의가 없었기 때문이다.", "갑의 행위는 자기의 법익에 대한 현재의 위난을 피하기 위한 긴급 피난에 해당하여 위법성이 조각되기 때문이다.", "동물은 재물이 아니므로 재물손괴죄가 성립하지 않는다.", "갑의 행위는 사회상규에 위배되지 않는 정당행위이기 때문이다."], answerIndex: 1 },
-            { id: 10, difficulty: '하', case: "운전자 갑은 주차된 차를 손괴하고도 피해자에게 연락처를 제공하지 않고 도주했습니다.", q1: 'O', q2: ["도로교통법에 따라 교통사고 발생 시 필요한 조치를 하지 않은 경우 처벌하도록 규정되어 있고, 이는 실질적 의미의 형법에 해당하기 때문이다.", "갑의 행위는 형법에 규정된 구성 요건에 해당하지 않기 때문이다.", "재물손괴죄만 성립하고 다른 범죄는 성립하지 않는다.", "경미한 사고이므로 범죄로 볼 수 없다."], answerIndex: 0 },
-            { id: 11, difficulty: '중', case: "만취 상태로 심신 상실에 이른 갑이 지나가던 을을 폭행하여 상해를 입혔습니다.", q1: 'X', q2: ["갑의 행위는 고의에 의한 것이 아니기 때문이다.", "갑은 심신 상실 상태였으므로 사물을 변별하거나 의사를 결정할 능력이 없어 책임이 조각되어 범죄가 성립하지 않기 때문이다.", "갑은 심신 미약 상태였으므로 책임이 감경될 뿐 범죄는 성립한다.", "피해자의 승낙이 있었기 때문이다."], answerIndex: 1 },
-            { id: 12, difficulty: '중', case: "「경범죄 처벌법」에 '지나친 노출로 타인에게 부끄러운 느낌이나 불쾌감을 준 사람'을 처벌하는 조항이 있었습니다. 헌법재판소는 이 조항이 위헌이라고 결정했습니다.", q1: 'X', q2: ["이 조항이 관습 형법에 해당하기 때문이다.", "이 조항에 명시된 구성 요건의 의미가 추상적이고 불명확하여 죄형 법정주의의 명확성의 원칙에 위배되어 위헌 결정되었기 때문에 처벌할 수 없다.", "이 조항은 소급효 금지의 원칙에 위배되기 때문이다.", "이 조항은 비례성의 원칙에 어긋나기 때문이다."], answerIndex: 1 },
-            { id: 13, difficulty: '중', case: "심신 미약 상태인 갑이 길을 가다 우발적으로 을을 폭행하여 상해를 입혔습니다.", q1: 'O', q2: ["갑의 심신 미약 상태로 인해 책임이 완전히 조각되기 때문이다.", "상해의 구성 요건에 해당하지 않기 때문이다.", "위법성 조각 사유에 해당하기 때문이다.", "갑이 심신 미약 상태이더라도 상해죄는 성립하며, 다만 형이 감경될 수 있기 때문이다."], answerIndex: 3 },
-            { id: 14, difficulty: '중', case: "갑은 죽고 싶다는 을의 간곡한 부탁을 받고 을을 살해했습니다.", q1: 'O', q2: ["을의 승낙이 있었으므로 갑의 행위는 위법성이 조각된다.", "갑에게 살인의 고의가 없었기 때문이다.", "피해자의 승낙이 있더라도 형법 제252조에 따라 법률에 특별한 규정이 있는 경우 위법성이 조각되지 않으므로 살인죄(촉탁살인죄)가 성립하기 때문이다.", "갑의 행위는 윤리적으로 비난받을 만하지만 법적으로는 처벌되지 않는다."], answerIndex: 2 },
-            { id: 15, difficulty: '중', case: "갑이 범죄를 저지른 뒤, 형벌 법규가 개정되어 갑의 행위에 대한 형벌이 이전보다 가벼워졌습니다. 재판은 개정된 법률 시행 이후에 진행되었습니다.", q1: 'X', q2: ["범죄 행위 시의 법률을 적용하는 것이 원칙이기 때문이다.", "소급효 금지의 원칙에 따라 행위 시의 법을 적용해야 하기 때문이다.", "행위자에게 유리한 경우에는 개정된 법률을 소급하여 적용하는 것이 허용되기 때문이다.", "재판 시의 법률을 적용하는 것이 법적 안정성을 해치지 않기 때문이다."], answerIndex: 2 },
-            { id: 16, difficulty: '중', case: "갑이 범죄를 저지른 후, 새로 '치료 감호'라는 보안 처분에 관한 법률이 제정되었습니다. 재판부는 갑의 재범 위험성을 고려하여 치료 감호를 명령할 수 있다고 판단했습니다.", q1: 'O', q2: ["치료 감호는 형벌이 아니라 보안 처분으로서 장래의 위험성 방지를 목적으로 하므로 소급효 금지의 원칙이 적용되지 않기 때문이다.", "새로운 법률은 범죄 행위 이후에 제정되었으므로 소급하여 적용할 수 없기 때문이다.", "보안 처분은 항상 범죄자와 함께 적용되어야 하기 때문이다.", "갑이 치료 감호를 거부할 권리가 있기 때문이다."], answerIndex: 0 },
-            { id: 17, difficulty: '중', case: "갑은 길을 걷다가 발에 채인 물건이 자신의 것이라고 착각하고 주머니에 넣었습니다. 알고 보니 그것은 을의 지갑이었습니다.", q1: 'X', q2: ["갑의 행위가 구성 요건에 해당하지만 위법성이 조각되기 때문이다.", "절도죄는 타인의 재물을 불법하게 취득하려는 고의(영득의 고의)를 필요로 하는데, 갑에게는 그러한 고의가 없었기 때문이다.", "갑의 과실로 인한 행위는 처벌 대상이 아니기 때문이다.", "길에 떨어진 물건은 소유자가 없으므로 절도죄가 성립하지 않는다."], answerIndex: 1 },
-            { id: 18, difficulty: '중', case: "갑은 잃어버린 자신의 시계를 훔쳐간 범인이 을이라는 사실을 알고, 경찰에 신고할 시간이 없어 즉시 을의 집으로 찾아가 을을 제압하고 시계를 되찾아왔습니다. 나중에 확인 결과 을이 범인이 맞았습니다.", q1: 'X', q2: ["갑의 행위는 자신의 재산을 보호하기 위한 정당방위에 해당하기 때문이다.", "국가의 구제를 기대하기 어려운 상황에서 자신의 청구권을 보전하기 위한 자구행위에 해당하여 위법성이 조각되기 때문이다.", "갑이 폭행과 절도를 고의로 행했으므로 범죄가 성립한다.", "을이 범인이었으므로 갑의 행위는 법적으로 아무 문제가 없다."], answerIndex: 1 },
-            { id: 19, difficulty: '상', case: "듣거나 말하는 데 모두 장애가 있는 농아자 갑이 고의로 을을 폭행하여 상해를 입혔습니다.", q1: 'O', q2: ["농아자의 행위는 심신상실과 유사하여 책임이 조각되기 때문이다.", "농아자의 행위는 형법상 책임 감경 사유에 해당할 뿐, 범죄는 여전히 성립하기 때문이다.", "상해의 고의가 없었기 때문이다.", "농아자는 의사소통에 어려움이 있어 자신의 행위에 대한 책임을 물을 수 없기 때문이다."], answerIndex: 1 },
-            { id: 20, difficulty: '상', case: "형법상 '컴퓨터 등 사용 사기죄'는 재산상의 이익만을 객체로 규정하고 있습니다. 검사 갑은 피고인 을이 컴퓨터를 사용하여 '재물'을 편취한 사건에 대해 유사한 형법 조항을 유추 해석하여 '컴퓨터 등 사용 사기죄'로 기소하였습니다.", q1: 'X', q2: ["유추 해석은 항상 금지되므로 정당하지 않다.", "죄형 법정주의의 유추 해석 금지의 원칙은 행위자에게 불리한 유추 해석을 금지하므로, 검사의 유추 해석은 정당하지 않다.", "행위자에게 유리한 유추 해석은 허용되므로 정당하다.", "유사한 성질의 범죄에 대해서는 유추 해석이 허용되기 때문이다."], answerIndex: 1 },
-            { id: 21, difficulty: '상', case: "경찰관 갑은 불법 만두소를 제조하여 납품한 업체를 직무상 알게 되어 즉시 이 사실을 언론에 공표하였습니다. 이로 인해 만두 업체의 명예와 신용이 크게 훼손되었지만, 공표 내용은 국민의 보건·위생에 중대한 영향을 미치는 공익성이 인정되었습니다 (대법원 판례).", q1: 'X', q2: ["경찰관의 직무상 행위이므로 명예훼손죄는 성립하지 않는다.", "공익성이 인정되더라도 명예훼손의 구성 요건에 해당하기 때문이다.", "국민의 보건·위생을 위한 행위로서 공익성과 진실성이 인정되어 사회상규에 위배되지 않는 정당행위에 해당하므로 위법성이 조각되기 때문이다.", "피해자의 동의가 없었으므로 명예훼손죄가 성립한다."], answerIndex: 2 },
-            { id: 22, difficulty: '상', case: "갑은 을을 살해할 의도로 총을 쏘았으나, 빗나가 옆에 있던 병이 맞아 사망했습니다.", q1: 'O', q2: ["갑은 병을 살해할 의도가 없었으므로 살인죄가 성립하지 않는다.", "피해자가 의도했던 을이 아니므로 살인죄가 성립하지 않는다.", "갑에게 사람을 살해하려는 고의가 있었고, 그 고의에 의해 사망이라는 결과가 발생했으므로 객체의 착오에도 불구하고 살인죄의 구성 요건을 충족하여 살인죄가 성립한다.", "과실치사죄만 성립할 뿐 살인죄는 성립하지 않는다."], answerIndex: 2 },
-            { id: 23, difficulty: '상', case: "갑과 을이 서로 싸우는 상황에서 을이 일방적으로 갑을 공격하였고, 갑은 자신을 보호하기 위해 을에게 저항하며 유형력을 행사했습니다. 갑의 저항 행위는 새로운 적극적 공격으로 평가되지 않는 수준이었습니다.", q1: 'X', q2: ["서로 싸우는 상황에서는 쌍방 폭행이므로 갑의 행위도 범죄가 성립한다.", "갑의 행위가 정당방위에 해당하지만, 그 정도를 초과했으므로 범죄가 성립한다.", "을의 일방적 공격으로부터 자신을 보호하기 위한 저항 수단으로서 사회 관념상 허용될 수 있는 상당성이 인정되어 위법성이 조각되기 때문이다.", "갑에게 폭행의 고의가 없었으므로 범죄가 성립하지 않는다."], answerIndex: 2 },
-            { id: 24, difficulty: '최상', case: "제2차 세계 대전 당시 나치 독일은 '독일인의 피와 명예를 지키기 위한 법'과 '제국 시민법' 등의 뉘른베르크법을 제정하여 유대인에 대한 학살의 법적 근거로 삼았습니다. 이 법은 당시 독일의 법률 제정 절차를 준수하여 제정되었습니다.", q1: 'X', q2: ["당시 합법적인 절차에 의해 제정된 법률이므로 정당한 처벌로 볼 수 있다.", "죄형 법정주의는 '형식적 의미의 형법'만을 요구하므로 정당하다.", "법률 제정 절차를 준수한 형식적 죄형 법정주의에는 충실했지만, 그 내용이 정의롭지 못하고 인간의 존엄과 가치를 침해하는 '실질적 죄형 법정주의'에 반하므로 정당한 처벌로 볼 수 없다.", "뉘른베르크법은 소급효 금지의 원칙에 위배되므로 정당하지 않다."], answerIndex: 2 },
-            { id: 25, difficulty: '최상', case: "'청소년 보호법'상 청소년에게 유해한 약물을 판매한 종업원 갑은 처벌되었습니다. 그런데 '양벌규정'에 따라 갑이 일하는 법인(회사) 을도 함께 벌금형을 선고받게 되었습니다. 법인 을은 종업원 관리에 최선을 다했다고 주장했습니다.", q1: 'X', q2: ["법인은 자연인이 아니므로 범죄 능력이 없어 처벌받지 않는다.", "법인은 종업원 관리에 최선을 다했다고 주장하더라도 책임이 조각되어 처벌받지 않는다.", "양벌규정은 종업원의 범죄 행위에 대해 법인 자체에게도 벌금형 등 형사 처벌을 과하도록 규정하며, 법인의 선임 및 감독상의 주의 의무 위반이 인정되면 책임주의 원칙에 따라 처벌되므로 처벌받는다.", "오직 종업원 갑만이 범죄를 저질렀으므로 법인은 처벌받을 수 없다."], answerIndex: 2 }
+            // 난이도 하 (O/X 1단계 퀴즈)
+            { id: 1, type: 'one-step-ox', difficulty: '하', case: "형법은 죄형 법정주의를 중심으로 그 의의와 기능을 이해하는 데 중요한 역할을 한다.", q1: 'O' },
+            { id: 2, type: 'one-step-ox', difficulty: '하', case: "사회생활에서 발생하는 다양한 법적 문제를 탐구할 때 노동법을 통해 보호되는 근로자의 권리에 대한 이해는 필요하지 않다.", q1: 'X' },
+            { id: 3, type: 'one-step-ox', difficulty: '하', case: "형법은 어떤 행위가 범죄이고 그 범죄를 어떻게 처벌할 것인지 미리 성문의 법률로 규정하여야 한다는 원칙을 '죄형 법정주의'라고 한다.", q1: 'O' },
+            { id: 4, type: 'one-step-ox', difficulty: '하', case: "우리 형법에서 규정하고 있는 인권 보장을 위한 원칙과 제도의 취지를 깨닫고 형사 절차에서 피의자와 피고인의 인권을 존중하는 자세를 가져야 한다.", q1: 'O' },
+            { id: 5, type: 'one-step-ox', difficulty: '하', case: "형식적 의미의 형법은 ‘형법’이라는 이름이 붙여진 법률만을 의미한다.", q1: 'O' },
+            { id: 6, type: 'one-step-ox', difficulty: '하', case: "실질적 의미의 형법은 법의 명칭이나 형식을 불문하고 범죄와 그에 대한 법적 효과로서 형벌과 보안 처분을 규정한 모든 법 규범을 포함한다.", q1: 'O' },
+            { id: 7, type: 'one-step-ox', difficulty: '하', case: "형법의 보호적 기능은 범죄에 형벌을 부과하여 사회 윤리적 행위 가치를 보호하는 기능을 수행한다.", q1: 'O' },
+            { id: 8, type: 'one-step-ox', difficulty: '하', case: "죄형 법정주의는 국가 형벌권의 자의적인 행사로부터 시민의 자유와 권리를 보장하려는 근대 인권 사상의 요청으로 등장하였다.", q1: 'O' },
+            { id: 9, type: 'one-step-ox', difficulty: '하', case: "죄형 법정주의의 파생 원칙 중 관습 형법 금지의 원칙에 따르면, 관습법을 근거로 일정한 행위를 범죄로 인정하거나 형벌을 부과할 수 없다.", q1: 'O' },
+            { id: 10, type: 'one-step-ox', difficulty: '하', case: "형벌의 종류 중 '사형'은 생명을 빼앗는 형벌에 해당한다.", q1: 'O' },
+            { id: 11, type: 'one-step-ox', difficulty: '하', case: "형벌의 종류 중 징역, 금고, 구류는 신체의 자유를 빼앗는 자유형에 해당한다.", q1: 'O' },
+            { id: 12, type: 'one-step-ox', difficulty: '하', case: "형벌의 종류 중 '벌금'과 '과료'는 재산을 빼앗는 재산형에 해당한다.", q1: 'O' },
+            { id: 13, type: 'one-step-ox', difficulty: '하', case: "형사 절차의 첫 번째 단계는 범인을 발견하고 범죄의 증거를 수집·보전하는 수사 절차이다.", q1: 'O' },
+            { id: 14, type: 'one-step-ox', difficulty: '하', case: "수사 결과 피의자의 범죄 혐의가 인정되면 검사가 법원에 재판을 요청하는 것을 기소(공소 제기)라고 한다.", q1: 'O' },
+            { id: 15, type: 'one-step-ox', difficulty: '하', case: "범죄를 저지른 사람이 19세 미만의 소년이면 성인 범죄자와 동일한 재판 절차와 형 집행 절차를 거친다.", q1: 'X' },
+            { id: 16, type: 'one-step-ox', difficulty: '하', case: "국민 참여 재판에서 배심원의 평결은 법원을 기속하며, 반드시 따라야 한다.", q1: 'X' },
+            { id: 17, type: 'one-step-ox', difficulty: '하', case: "적법 절차의 원칙은 누구든지 법률에 규정된 절차에 따르지 않고는 처벌할 수 없음을 의미한다.", q1: 'O' },
+            { id: 18, type: 'one-step-ox', difficulty: '하', case: "형사 절차에서 피의자와 피고인은 자신에게 불리한 진술을 거부할 수 있는 진술 거부권을 가진다.", q1: 'O' },
+            { id: 19, type: 'one-step-ox', difficulty: '하', case: "형사 피고인이 구금되었다가 무죄 판결을 받은 때에는 국가를 상대로 손해에 따른 금전적인 보상을 청구할 수 있는데, 이를 '형사 보상 제도'라고 한다.", q1: 'O' },
+            { id: 20, type: 'one-step-ox', difficulty: '하', case: "형벌은 국가가 범죄 행위를 저지른 사람에게 가하는 제재를 의미한다.", q1: 'O' },
+            { id: 21, type: 'one-step-ox', difficulty: '하', case: "공판 절차에서 피고인의 유무죄를 판단한다.", q1: 'O' },
+            { id: 22, type: 'one-step-ox', difficulty: '하', case: "선고 유예는 형의 선고를 미루었다가 2년이 지나면 형의 선고가 없었던 것으로 간주하는 제도이다.", q1: 'O' },
+            { id: 23, type: 'one-step-ox', difficulty: '하', case: "국내범 원칙에 따르면, 대한민국 영역 내에서 죄를 범한 내국인과 외국인에게 모두 한국 형법이 적용된다.", q1: 'O' },
+            { id: 24, type: 'one-step-ox', difficulty: '하', case: "보안 처분은 미래의 재범 위험성에 대비하는 예방적 성격의 제재이다.", q1: 'O' },
+            { id: 25, type: 'one-step-ox', difficulty: '하', case: "모든 피의자와 피고인은 변호인의 조력을 받을 권리가 있다.", q1: 'O' },
+
+            // 난이도 중 (4지선다 1단계 퀴즈)
+            { id: 26, type: 'single', difficulty: '중', case: "다음 중 형법의 기능으로 옳지 않은 것은?", q2: ["국민의 자유와 권리 보장", "범죄에 형벌을 부과하여 사회 윤리적 행위 가치 보호", "국가 형벌권의 자의적 행사 제한", "민사 재판에서의 손해 배상 목적 달성"], answerIndex: 3 },
+            { id: 27, type: 'single', difficulty: '중', case: "다음 중 죄형 법정주의를 실현하는 구체적 원칙이 아닌 것은?", q2: ["명확성의 원칙", "유추 해석 금지의 원칙", "소급효 금지의 원칙", "법관의 자의적 판단 허용 원칙"], answerIndex: 3 },
+            { id: 28, type: 'single', difficulty: '중', case: "형법상 범죄가 성립하기 위한 3단계 요건을 바르게 나열한 것은?", q2: ["위법성 → 구성 요건 해당성 → 책임", "책임 → 위법성 → 구성 요건 해당성", "구성 요건 해당성 → 위법성 → 책임", "구성 요건 해당성 → 책임 → 위법성"], answerIndex: 2 },
+            { id: 29, type: 'single', difficulty: '중', case: "다음 중 형법상 '재산형'에 해당하는 형벌을 모두 고른 것은?<br> (ㄱ. 벌금 ㄴ. 금고 ㄷ. 과료 ㄹ. 몰수 ㅁ. 사형)", q2: ["ㄱ, ㄴ, ㄷ", "ㄱ, ㄷ, ㄹ", "ㄴ, ㄹ, ㅁ", "ㄱ, ㄷ, ㅁ"], answerIndex: 1 },
+            { id: 30, type: 'single', difficulty: '중', case: "형벌 중 징역과 금고의 주된 차이점은 무엇인가?", q2: ["징역은 형기가 짧고, 금고는 형기가 길다.", "징역은 교정 시설에 수용하지만, 금고는 수용하지 않는다.", "징역은 정해진 노역에 복무하게 하지만, 금고는 노역을 부과하지 않는다.", "징역은 유기형만 가능하고, 금고는 무기형만 가능하다."], answerIndex: 2 },
+            { id: 31, type: 'single', difficulty: '중', case: "다음 중 형사 절차의 흐름을 바르게 연결한 것은?", q2: ["공판 절차 → 수사 절차 → 형 집행 절차", "형 집행 절차 → 수사 절차 → 공판 절차", "수사 절차 → 공판 절차 → 형 집행 절차", "수사 절차 → 형 집행 절차 → 공판 절차"], answerIndex: 2 },
+            { id: 32, type: 'single', difficulty: '중', case: "다음 중 검사가 공소를 제기하지 않는 처분인 불기소 처분의 종류가 아닌 것은?", q2: ["기소 유예", "혐의 없음", "공소 제기", "죄가 안 됨"], answerIndex: 2 },
+            { id: 33, type: 'single', difficulty: '중', case: "형의 선고 중 집행 유예에 대한 설명으로 옳은 것은?", q2: ["형의 선고 자체를 미루었다가 2년이 지나면 형 선고가 없었던 것으로 간주한다.", "형을 선고한 뒤 특정한 사유에 따라 그 형의 집행을 일정 기간 미루었다가 그 기간이 지나면 형 선고의 효력이 상실된다.", "범죄자에게 불리한 처우이므로 반드시 법률과 적법한 절차에 따라야 한다.", "교도소에 수용된 수형자가 잘못을 뉘우치고 성실하게 수형 생활을 하면 일정한 조건에 따라 형 집행이 완료되기 전에 석방하는 제도이다."], answerIndex: 1 },
+            { id: 34, type: 'single', difficulty: '중', case: "형사 절차 전반에 적용되는 인권 보장 원칙 중, 유죄 판결이 확정될 때까지 무죄로 추정하는 원칙은 무엇인가?", q2: ["적법 절차의 원칙", "진술 거부권", "변호인의 조력을 받을 권리", "무죄 추정의 원칙"], answerIndex: 3 },
+            { id: 35, type: 'single', difficulty: '중', case: "범죄 피해자 보호를 위한 제도 중, 범죄로 목숨을 잃거나 신체에 해를 당한 피해자나 그 가족에게 국가에서 일정한 한도의 구조금을 지급하는 제도는 무엇인가?", q2: ["피해자 신변 보호 제도", "범죄 피해자 구조 제도", "배상 명령 제도", "명예 회복 제도"], answerIndex: 1 },
+            { id: 36, type: 'single', difficulty: '중', case: "다음 중 형법의 성격에 대한 설명으로 옳은 것을 고르시오.", q2: ["형법은 행위 규범의 성격만 가진다.", "형법은 재판 규범의 성격만 가진다.", "형법은 행위 규범과 재판 규범의 성격을 동시에 가진다.", "형법은 규범적 성격이 없다."], answerIndex: 2 },
+            { id: 37, type: 'single', difficulty: '중', case: "다음 사례는 죄형 법정주의의 어떤 구체적 원칙과 가장 밀접하게 관련되어 있는가?<br>(사례: '지나치게', '부끄러운 느낌' 등 불명확한 표현을 사용한 경범죄 처벌법 조항이 위헌 결정된 사례)", q2: ["관습 형법 금지의 원칙", "소급효 금지의 원칙", "명확성의 원칙", "유추 해석 금지의 원칙"], answerIndex: 2 },
+            { id: 38, type: 'single', difficulty: '중', case: "민법과 형법에서 고의와 과실을 다루는 방식의 차이점에 대한 설명으로 옳은 것은?", q2: ["민법은 고의범을 처벌하는 것을 원칙으로 하고, 형법은 손해 배상이 목적이므로 고의와 과실을 구별하지 않는다.", "민법은 손해 배상이 목적이므로 고의와 과실을 구별하지 않는 것을 원칙으로 하고, 형법은 고의범을 처벌하는 것을 원칙으로 한다.", "민법과 형법 모두 고의범을 처벌하는 것을 원칙으로 하고, 과실범은 예외적으로 처벌한다.", "민법과 형법 모두 손해 배상이 목적이므로 고의와 과실을 구별하지 않는다."], answerIndex: 1 },
+            { id: 39, type: 'single', difficulty: '중', case: "다음 중 형벌이 아닌 보안 처분에 대한 설명으로 가장 적절한 것은?", q2: ["범죄자의 과거 행위에 대한 책임을 물어 사회 윤리적 비난을 표현하는 제재이다.", "오로지 사회 방위만을 목적으로 하며, 범죄자의 재사회화와는 무관하다.", "범죄자의 재사회화를 위한 대안적 제재 수단이며, 재범 위험성에 대비하는 예방적 성격이 강하다.", "형벌과 달리 법률의 규정이나 적법 절차의 원리가 적용되지 않는다."], answerIndex: 2 },
+            { id: 40, type: 'single', difficulty: '중', case: "형사 재판의 공판 절차 중 심리 단계에서 진행되는 순서로 가장 적절한 것은?<br>(ㄱ. 검사의 구형 ㄴ. 증거 조사 ㄷ. 피고인의 최후 진술 ㄹ. 피고인과 증인에 대한 신문 및 변론)", q2: ["ㄱ → ㄴ → ㄷ → ㄹ", "ㄴ → ㄹ → ㄱ → ㄷ", "ㄷ → ㄱ → ㄹ → ㄴ", "ㄹ → ㄷ → ㄴ → ㄱ"], answerIndex: 1 },
+            { id: 41, type: 'single', difficulty: '중', case: "형사 재판과 민사 재판의 차이에 대한 설명으로 옳지 않은 것은?", q2: ["형사 재판은 피고인의 유무죄를 판단하고 형벌 부과가 목적인 반면, 민사 재판은 개인 간의 분쟁 해결과 손해 배상이 목적이다.", "형사 재판에서는 ‘의심할 여지 없는 증거’가 요구되지만, 민사 재판에서는 ‘개연성이 더 크면 인정할 수 있다’는 입증 기준이 적용된다.", "동일한 사건에 대해 형사 재판과 민사 재판의 결론이 다를 수 있다.", "형사 재판과 민사 재판 모두 검사가 공소 제기를 통해 시작한다."], answerIndex: 3 },
+            { id: 42, type: 'single', difficulty: '중', case: "형법 제1조 제2항은 '범죄 후 법률이 변경되어 그 행위가 범죄를 구성하지 아니하게 되거나 형이 구법(舊法)보다 가벼워진 경우에는 신법(新法)에 따른다.'고 규정한다. 이 조항이 반영하는 죄형 법정주의의 원칙은 무엇인가?", q2: ["관습 형법 금지의 원칙", "소급효 금지의 원칙 (행위자에게 불리한 소급효 금지)", "명확성의 원칙", "유추 해석 금지의 원칙"], answerIndex: 1 },
+            { id: 43, type: 'single', difficulty: '중', case: "우리나라의 사형 제도에 대한 설명으로 옳은 것은?", q2: ["우리나라 형법에는 사형이 명문화되어 있지 않다.", "1997년 이후 사형이 집행되지 않아 국제 사면 위원회는 한국을 '실질적 사형 폐지국'으로 분류하고 있다.", "헌법재판소는 사형 제도가 오판 가능성 때문에 침해의 최소성 원칙에 어긋난다고 결정하였다.", "사형은 무기 징역형 등 자유형보다 범죄 억지력이 약하다고 평가된다."], answerIndex: 1 },
+            { id: 44, type: 'single', difficulty: '중', case: "재심 제도에 대한 설명으로 옳은 것은?", q2: ["유죄의 확정 판결에 중대한 사실 오인이 있는 경우에 그 오류를 시정하여 무고한 자의 이익을 구제하여 주는 제도이다.", "검사가 불기소 처분을 했을 때, 범죄 피해자가 고등 검찰청에 항고하는 제도이다.", "법관이 각 범죄에 대응하여 법률에 규정되어 있는 형벌을 선택하고 집행유예 여부를 결정하는 기준이다.", "국민이 배심원 또는 예비 배심원으로 형사 재판에 참여하는 제도이다."], answerIndex: 0 },
+            { id: 45, type: 'single', difficulty: '중', case: "형사 절차에서 인신 구속과 해방 제도에 대한 설명으로 옳지 않은 것은?", q2: ["수사 단계에서 피의자를 인신 구속하기 위해서는 판사에게 영장을 발부받아야 한다.", "구속된 피의자는 구속 적부심 제도를 통해 구속의 정당성을 심사받을 수 있다.", "공판 단계에서는 구속 재판이 원칙이므로, 피고인은 항상 구속된 상태에서 재판을 받는다.", "구속된 피고인은 보석 제도를 통하여 석방될 수 있다."], answerIndex: 2 },
+
+            // 난이도 상 (4지선다 1단계 퀴즈)
+            { id: 46, type: 'single', difficulty: '상', case: "다음 판결은 어떤 형법 원칙의 적용을 받지 않는 사례인가?<br>(사례: 보호관찰은 보안처분이므로 재판 시 법률을 적용해도 소급효 금지 원칙에 위배되지 않는다는 판결)", q2: ["관습 형법 금지의 원칙", "명확성의 원칙", "소급효 금지의 원칙", "비례성의 원칙"], answerIndex: 2 },
+            { id: 47, type: 'single', difficulty: '상', case: "다음 사례에서 충족되지 않은 범죄 성립 요건은 무엇인가?<br>(사례: 갑이 음식점 앞에 있던 고양이를 을의 고양이로 착각하여 데려간 행위)", q2: ["구성 요건 해당성", "위법성", "책임", "모든 요건이 충족되었다."], answerIndex: 0 },
+            { id: 48, type: 'single', difficulty: '상', case: "다음은 범죄의 3단계 성립 요건 중 어떤 요건이 조각되는 사례인가?<br>(사례: 병이 자신을 물려고 하는 다른 사람 소유의 개를 걷어차 상처를 입힌 행위)", q2: ["구성 요건 해당성", "위법성", "책임", "모든 요건이 충족되었다."], answerIndex: 1 },
+            { id: 49, type: 'single', difficulty: '상', case: "다음은 범죄의 3단계 성립 요건 중 어떤 요건이 조각되는 사례인가?<br>(사례: 정이 강도의 강요와 협박에 의하여 어쩔 수 없이 금고문을 열어 준 행위)", q2: ["구성 요건 해당성", "위법성", "책임", "모든 요건이 충족되었다."], answerIndex: 2 },
+            { id: 50, type: 'single', difficulty: '상', case: "소년 보호 사건 처리 절차에서 범죄를 저지른 19세 미만의 소년에게 적용될 수 없는 처분은?", q2: ["훈방 조치", "보호 관찰", "소년원 송치", "사형 선고"], answerIndex: 3 },
+            { id: 51, type: 'single', difficulty: '상', case: "다음 중 형사 절차에서 수사 단계의 인권 보장 제도에 해당하는 것은?", q2: ["보석 제도", "무죄 추정의 원칙", "구속 전 피의자 심문 제도", "위법하게 수집된 증거를 인정하지 않는 원칙"], answerIndex: 2 },
+            { id: 52, type: 'single', difficulty: '상', case: "다음 중 형사 절차에서 재판 단계의 인권 보장 제도에 해당하는 것은?", q2: ["불구속 수사 원칙", "영장주의", "구속 적부심 제도", "보석 제도"], answerIndex: 3 },
+            { id: 53, type: 'single', difficulty: '상', case: "다음 사례의 최종적인 판단이 옳다면, 그 근거로 볼 수 있는 형법 원칙은 무엇인가?<br>(사례: 전화를 통한 상관 모욕은 '상관 면전 모욕죄'에 해당하지 않는다고 판단)", q2: ["소급효 금지의 원칙", "유추 해석 금지의 원칙", "비례성의 원칙", "명확성의 원칙"], answerIndex: 1 },
+            { id: 54, type: 'single', difficulty: '상', case: "범죄 능력에 대한 설명으로 옳은 것은?", q2: ["범죄 능력은 범죄 행위를 할 수 있는 능력으로, 법인도 자연인과 동일한 범죄 능력을 가진다.", "형사 책임은 의사 형성의 윤리적 비난이므로, 법인은 형사 책임을 질 수 없다.", "오늘날 사회가 복잡·다양화됨에 따라 법인에 의한 반사회적 법익 침해 행위에 대해서는 법인 자체에 대한 제재 수단이 필요하게 되었다.", "양벌규정은 종업원 등의 범죄 행위에 대해 해당 종업원만 형사 처벌하는 것을 의미한다."], answerIndex: 2 },
+            { id: 55, type: 'single', difficulty: '상', case: "다음 중 죄형 법정주의의 실질적 의미와 가장 관련 깊은 원칙은?", q2: ["관습 형법 금지의 원칙", "소급효 금지의 원칙", "명확성의 원칙", "적정성(비례성)의 원칙"], answerIndex: 3 },
+            { id: 56, type: 'single', difficulty: '상', case: "다음 형법 제13조의 내용이 강조하는 범죄 성립 요건은 무엇인가?<br>\"죄의 성립요소인 사실을 인식하지 못한 행위는 벌하지 아니한다. 다만, 법률에 특별한 규정이 있는 경우에는 예외로 한다.\"", q2: ["위법성", "책임", "구성 요건 해당성 (고의)", "위법성 조각 사유의 부재"], answerIndex: 2 },
+            { id: 57, type: 'single', difficulty: '상', case: "소년 보호 처분의 종류와 그에 대한 설명으로 옳지 않은 것은?", q2: ["보호자 또는 보호자를 대신하여 소년을 보호할 수 있는 사람에게 감호 위탁", "유죄가 인정된 의존성·중독성 범죄자 등에게 범죄성 개선을 위한 교육을 받도록 명령하는 수강 명령", "일정 기간 사회봉사를 하도록 명령하는 사회봉사 명령", "심신 장애가 있거나 알코올, 마약에 중독된 상태에서 죄를 저지른 사람에게 소년 교도소에 수용하여 치료를 받도록 하는 치료 감호"], answerIndex: 3 },
+            { id: 58, type: 'single', difficulty: '상', case: "다음 대법원 판결이 설명하는 형사 절차상 원칙은 무엇인가?<br>\"피고인의 자백이 그 피고인에게 불이익한 유일한 증거인 때에는 유죄의 증거로 하지 못한다.\"", q2: ["증거 재판주의", "위법 수집 증거 배제 법칙", "자백 배제 법칙", "자백 보강 법칙"], answerIndex: 3 },
+            { id: 59, type: 'single', difficulty: '상', case: "강제 처분 법정주의와 영장주의에 대한 설명으로 옳은 것은?", q2: ["강제 처분은 실체적 진실 발견을 위해 개인의 기본권을 침해하더라도 법률에 규정되어 있다면 언제든 허용된다.", "강제 처분은 법률에 규정되어 있다고 하더라도 법원 또는 법관의 영장 발부를 조건으로 한다.", "강제 처분은 필요한 최소한도의 범위 안에서만 허용되며, 비례성의 원칙이 적용되지 않는다.", "영장주의는 강제 처분의 남용을 억제하고 국민의 자유권과 재산권을 보장하기 위한 것이 아니다."], answerIndex: 1 },
+            { id: 60, type: 'single', difficulty: '상', case: "다음 중 「소년법」상 소년 형사 범죄에 관한 특칙으로 옳지 않은 것은?", q2: ["수사 단계에서 소년에 대한 구속 영장은 부득이한 경우가 아니면 발부하지 못한다.", "공판 단계에서 소년이 법정형 장기 2년 이상의 유기형에 해당하는 죄를 범한 때에는 형의 범위에서 장기와 단기를 정하여 선고하는 상대적 부정기형이 적용될 수 있다.", "죄를 범할 당시 18세 미만인 소년에 대하여 사형 또는 무기형으로 처할 때에는 15년의 유기 징역으로 한다.", "소년 교도소에 수용된 소년범은 성인이 되면 즉시 일반 교도소로 이감되어야 한다."], answerIndex: 3 },
+            
+            // 난이도 최상 (2단계 퀴즈)
+            { id: 61, type: 'two-step', difficulty: '최상', case: "갑이 새벽 2시경 부산의 단독 주택에 들어가 피해자가 잠든 사이에 금고에 있던 보석을 훔치고 도망가다가 문을 따는 데 사용한 것으로 보이는 다용도 칼을 흘리고 달아난 사건은 특수절도죄에 해당한다.", q1: 'O', q2_question: "위 판단이 옳은 근거는 무엇인가?", q2: ["갑이 피해자의 동의 없이 타인의 재물을 절취하였기 때문이다.", "갑이 야간에 건조물의 일부를 손괴하고 침입하여 타인의 재물을 절취하였기 때문이다.", "갑이 흉기를 휴대하거나 2명 이상이 합동하여 타인의 재물을 절취하였기 때문이다.", "갑이 강도의 행위를 저질렀기 때문이다."], answerIndex: 1 },
+            { id: 62, type: 'two-step', difficulty: '최상', case: "미란다 원칙을 고지하지 않고 피의자로부터 받은 자백은 원칙적으로 유죄의 증거로 사용될 수 없다.", q1: 'O', q2_question: "위 판단의 가장 주된 근거는 무엇인가?", q2: ["자백만이 유일한 유죄의 증거일 때 유죄 판결을 할 수 없다는 자백 보강 법칙 때문이다.", "위법한 절차에 의하여 수집된 증거는 증거 능력이 없다는 위법 수집 증거 배제 법칙 때문이다.", "피고인 또는 피의자가 자기의 범죄 사실의 전부 또는 일부를 인정하는 진술인 자백은 증거 능력이 없기 때문이다.", "피의자에게 변호인의 조력을 받을 권리가 없기 때문이다."], answerIndex: 1 },
+            { id: 63, type: 'two-step', difficulty: '최상', case: "제2차 세계 대전 당시 독일의 뉘른베르크법은 형식적 죄형 법정주의의 위험성을 드러내는 대표적 사례로 볼 수 있다.", q1: 'O', q2_question: "위 판단이 옳은 이유로 가장 적절한 것은?", q2: ["법률의 내용이 실질적 정의에 합치되지 않더라도, 법률로 규정하기만 하면 형법의 정당성이 인정되었기 때문이다.", "법관의 자의적 해석 및 적용을 방지하여 국민의 인권을 보장하는 데 기여했기 때문이다.", "행위자에게 유리한 경우에만 소급효를 허용하여 법 적용의 유연성을 확보했기 때문이다.", "범죄와 형벌의 질과 양이 비례하여야 한다는 원칙을 철저히 준수했기 때문이다."], answerIndex: 0 },
+            { id: 64, type: 'two-step', difficulty: '최상', case: "「범죄 피해자 보호법」 제정 이후 범죄 피해자를 위한 지원 기관들이 신설되어 활동하고 있는데, 이 기관들은 순수한 민간 단체이므로 정부의 경제적 지원을 받지 않는다.", q1: 'X', q2_question: "위 판단이 틀린 이유로 가장 적절한 것은?", q2: ["범죄 피해자 지원 기관들은 오로지 범죄자 교화에만 초점을 맞추기 때문이다.", "「범죄 피해자 보호법」이 제정되지 않았기 때문이다.", "범죄 피해자 지원 기관들은 순수한 민간 단체가 아니며, 정부 관련 부처의 경제적 지원을 받기 때문이다.", "해당 기관들은 범죄 피해자의 심리 상담만을 제공하기 때문이다."], answerIndex: 2 },
+            { id: 65, type: 'two-step', difficulty: '최상', case: "형사소송법 제307조 제2항에 따르면, 범죄 사실의 인정은 합리적인 의심이 없는 정도의 증명에 이르러야 한다.", q1: 'O', q2_question: "위 조항이 반영하는 형사 절차상 원칙은 무엇인가?", q2: ["위법 수집 증거 배제 법칙", "자백 배제 법칙", "증거 재판주의", "전문 법칙"], answerIndex: 2 },
+            { id: 66, type: 'two-step', difficulty: '최상', case: "검사가 공소권을 독점하여 불기소 처분을 함으로써 억울한 범죄 피해자가 발생할 수 있는데, 이러한 피해자를 구제하기 위한 제도로 '재정 신청'이 있다.", q1: 'O', q2_question: "위 재정 신청 제도에 대한 설명으로 옳은 것은?", q2: ["재정 신청 사건은 지방 법원의 관할에 속하며, 법원이 공소 제기 결정을 하면 검사는 공소 취소를 할 수 있다.", "검사가 불기소 처분을 하면 범죄 피해자는 고등 법원에 즉시 재정 신청서를 제출할 수 있다.", "재정 신청 사건은 고등 검찰청의 관할에 속하며, 검사의 불기소 처분이 정당한지 여부를 심사한다.", "재정 신청 사건은 고등 법원의 관할에 속하고, 고등 법원이 공소 제기 결정을 하면 검사는 반드시 공소 제기를 하여야 하며, 진행 중 공소 취소도 불가능하다."], answerIndex: 3 },
+            { id: 67, type: 'two-step', difficulty: '최상', case: "형법 제328조 제1항에 따르면 직계혈족, 배우자, 동거친족, 동거가족 또는 그 배우자간의 권리행사방해죄는 그 형을 면제한다.", q1: 'O', q2_question: "위 조항은 어떤 법적 특례에 해당하는가?", q2: ["책임 조각 사유", "위법성 조각 사유", "친족 간의 범행 특례 (인적 처벌 조각 사유)", "범죄 성립 요건 불충족"], answerIndex: 2 },
+            { id: 68, type: 'two-step', difficulty: '최상', case: "차등 벌금제는 소득 비례 벌금제를 도입하여 국민들의 경제적 능력을 고려한 형평성 있는 처벌을 가능하게 한다.", q1: 'O', q2_question: "차등 벌금제에 대한 반대 의견의 주요 근거는 무엇인가?", q2: ["범죄 행위 처벌의 실효성이 높아질 수 있기 때문이다.", "형벌의 대원칙인 평등의 원칙에 위배될 수 있기 때문이다.", "범죄와 형벌에 대한 국민들의 실질적인 평등권을 보장할 수 있기 때문이다.", "제도 도입 후 재범률 감소 효과가 입증되었기 때문이다."], answerIndex: 1 }
         ];
 
         // 게임 초기화 함수
@@ -503,7 +680,12 @@
                 clearedStages: { '하': false, '중': false, '상': false },
                 isBossFight: false, bossStage: 0,
                 currentScreen: 'start-screen',
-                animation: { type: null, progress: 0, duration: 0 }
+                animation: { type: null, progress: 0, duration: 0, shake: 0 },
+                questionsAttempted: 0,
+                questionsCorrect: 0,
+                isSkippable: false,
+                onSkip: null,
+                skippableTimeoutId: null
             };
         }
 
@@ -541,7 +723,6 @@
                 if (playPromise !== undefined) {
                     playPromise.catch(error => {
                         console.error("오디오 자동재생 실패. 사용자 상호작용이 필요합니다.", error);
-                        // Web Audio API로 재시도 (이것도 실패할 수 있음)
                         initAndPlayBGMWithWebAudio();
                     });
                 }
@@ -578,8 +759,24 @@
         }
 
         function setupDifficultyScreen() {
+            // 난이도 선택 화면에 캐릭터 상태 표시
+            const statusEl = document.getElementById('difficulty-char-status');
+            statusEl.innerHTML = `
+                <h3>${gameState.player.name}</h3>
+                <p>LV. ${gameState.player.level} | 직업: ${gameState.player.class}</p>
+            `;
+
+            // 난이도 버튼 상태 업데이트
             document.querySelectorAll('.difficulty-btn').forEach(btn => {
                 const diff = btn.dataset.difficulty;
+                const isCleared = gameState.clearedStages[diff];
+                if(isCleared) {
+                    btn.textContent = `${diff} (클리어!)`;
+                    btn.style.backgroundColor = 'var(--success-color)';
+                } else {
+                    btn.textContent = diff;
+                    btn.style.backgroundColor = 'var(--primary-color)';
+                }
                 btn.classList.toggle('disabled', (diff === '중' && !gameState.clearedStages['하']) || (diff === '상' && !gameState.clearedStages['중']));
             });
             showScreen('difficulty-selection-screen');
@@ -591,6 +788,8 @@
             gameState.monstersDefeated = 0;
             gameState.usedQuizIds = [];
             gameState.isBossFight = false;
+            gameState.questionsAttempted = 0;
+            gameState.questionsCorrect = 0;
             monsterInfoDisplay.style.display = 'none';
             updateStatus();
             startDungeonAnimation(true);
@@ -607,10 +806,10 @@
                     height: canvas.height * 0.4
                 });
             }
-            gameState.animation = { type: 'dungeon-intro', progress: 0, duration: 2000 };
+            gameState.animation = { type: 'dungeon-intro', progress: 0, duration: 2000, shake: 0 };
             gameLoop();
             
-            setTimeout(() => {
+            const callback = () => {
                 if (gameState.animation.type === 'dungeon-intro') {
                     gameState.animation.type = null;
                     if (showInitialMessage) {
@@ -619,15 +818,36 @@
                         spawnMonster();
                     }
                 }
-            }, 2000);
+            };
+            
+            makeEventSkippable(callback, 2000);
         }
         
-        canvas.addEventListener('click', () => {
-            if (gameState.animation.type === 'dungeon-intro') {
-                gameState.animation.type = null;
-                 showTemporaryMessage("몬스터가 등장했습니다.", 1000, spawnMonster);
+        function makeEventSkippable(callback, duration) {
+            if (gameState.skippableTimeoutId) {
+                clearTimeout(gameState.skippableTimeoutId);
             }
-        });
+            
+            const onSkipCallback = () => {
+                if(gameState.isSkippable) { 
+                    gameState.isSkippable = false;
+                    clearTimeout(gameState.skippableTimeoutId);
+                    gameState.skippableTimeoutId = null;
+                    gameState.onSkip = null;
+                    callback();
+                }
+            };
+
+            gameState.isSkippable = true;
+            gameState.onSkip = onSkipCallback;
+            gameState.skippableTimeoutId = setTimeout(onSkipCallback, duration);
+        }
+
+        function skipCurrentEvent() {
+            if (gameState.isSkippable && typeof gameState.onSkip === 'function') {
+                gameState.onSkip();
+            }
+        }
 
         function spawnMonster() {
             const difficulty = gameState.difficulty;
@@ -637,9 +857,9 @@
                 monsterType = '보스';
             } else {
                  const rand = Math.random() * 100;
-                if (difficulty === '하') monsterType = rand < 60 ? '하' : (rand < 85 ? '중' : '상');
-                else if (difficulty === '중') monsterType = rand < 50 ? '하' : (rand < 80 ? '중' : '상');
-                else monsterType = rand < 40 ? '하' : (rand < 70 ? '중' : '상');
+                 if (difficulty === '하') monsterType = rand < 70 ? '하' : (rand < 90 ? '중' : '상');
+                 else if (difficulty === '중') monsterType = rand < 30 ? '하' : (rand < 70 ? '중' : '상');
+                 else monsterType = rand < 20 ? '하' : (rand < 60 ? '중' : '상');
             }
             
             gameState.currentMonster = { type: monsterType, imageKey: monsterType };
@@ -647,7 +867,9 @@
         }
 
         function startQuiz() {
-            let quizDifficulty = gameState.isBossFight ? (gameState.difficulty === '하' ? '상' : '최상') : gameState.currentMonster.type;
+            gameState.questionsAttempted++;
+            updateStatus();
+            let quizDifficulty = gameState.isBossFight ? '최상' : gameState.currentMonster.type;
 
             monsterInfoDisplay.innerHTML = `몬스터 등급: ${gameState.currentMonster.type}<br>문제 난이도: ${quizDifficulty}`;
             monsterInfoDisplay.style.display = 'block';
@@ -655,7 +877,7 @@
             const availableQuizzes = quizzes.filter(q => q.difficulty === quizDifficulty && !gameState.usedQuizIds.includes(q.id));
 
             if (availableQuizzes.length === 0) {
-                showMessage("모든 문제를 정복했습니다!", prepareNextEncounter);
+                showMessage(`이 난이도의 모든 문제를 정복했습니다!`, prepareNextEncounter);
                 return;
             }
 
@@ -666,63 +888,117 @@
         }
 
         function displayQuiz() {
-            quizCaseEl.textContent = `[사례] ${gameState.currentQuiz.case}\n\nQ1: 이 행위는 범죄가 성립하는가?`;
-            q1OptionsEl.style.display = 'flex';
-            q2OptionsEl.style.display = 'none';
-            q2OptionsEl.innerHTML = '';
-            quizContainer.style.display = 'flex';
-        }
-
-        function handleQ1Answer(answer) {
-            if (answer === gameState.currentQuiz.q1) {
-                quizCaseEl.textContent = `Q2: 그 이유는 무엇인가?`;
+            const quiz = gameState.currentQuiz;
+            
+            q2OptionsEl.innerHTML = ''; // Clear previous options
+            
+            if (quiz.type === 'single') {
+                quizCaseEl.innerHTML = `[문제]<br>${quiz.case}`;
                 q1OptionsEl.style.display = 'none';
-                
-                gameState.currentQuiz.q2.forEach((option, index) => {
+                q2OptionsEl.style.display = 'flex';
+                quiz.q2.forEach((option, index) => {
                     const btn = document.createElement('button');
                     btn.classList.add('btn', 'quiz-btn', 'q2-btn');
-                    btn.textContent = `${index + 1}. ${option}`;
+                    btn.innerHTML = `${index + 1}. ${option}`;
                     btn.dataset.answerIndex = index;
                     q2OptionsEl.appendChild(btn);
                 });
-                q2OptionsEl.style.display = 'flex';
+            } else { // 'two-step' or 'one-step-ox'
+                quizCaseEl.innerHTML = `[O/X 문제]<br>${quiz.case}`;
+                q1OptionsEl.style.display = 'flex';
+                q2OptionsEl.style.display = 'none';
+            }
+            quizContainer.style.display = 'flex';
+        }
+        
+        function displayQ2ForTwoStep() {
+            const quiz = gameState.currentQuiz;
+            const q2Question = quiz.q2_question || "그 이유는 무엇인가?";
+            quizCaseEl.innerHTML = `<b>Q2: ${q2Question}</b>`;
+            q1OptionsEl.style.display = 'none';
+            q2OptionsEl.style.display = 'flex';
+            
+            quiz.q2.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.classList.add('btn', 'quiz-btn', 'q2-btn');
+                btn.innerHTML = `${index + 1}. ${option}`;
+                btn.dataset.answerIndex = index;
+                q2OptionsEl.appendChild(btn);
+            });
+        }
+
+        function handleQ1Answer(answer) {
+            const quiz = gameState.currentQuiz;
+            if (answer === quiz.q1) {
+                if (quiz.type === 'one-step-ox') {
+                    handleCorrectAnswer();
+                } else { // two-step
+                    displayQ2ForTwoStep();
+                }
             } else {
                 handleIncorrectAnswer();
             }
         }
 
         function handleQ2Answer(index) {
-            if (index == gameState.currentQuiz.answerIndex) handleCorrectAnswer();
-            else handleIncorrectAnswer();
+            if (index == gameState.currentQuiz.answerIndex) {
+                handleCorrectAnswer();
+            } else {
+                handleIncorrectAnswer();
+            }
         }
 
         function handleCorrectAnswer() {
+            gameState.questionsCorrect++;
+            updateStatus();
             quizContainer.style.display = 'none';
             monsterInfoDisplay.style.display = 'none';
-            gameState.animation = { type: 'attack', progress: 0, duration: 1000 };
+            gameState.animation = { type: 'attack', progress: 0, duration: 1500, shake: 5 };
             effectParticles = [];
 
-            if (gameState.isBossFight) {
-                if (gameState.difficulty === '상' && gameState.bossStage === 0) {
-                    gameState.bossStage = 1;
-                    showMessage("여기서 쓰러질 수 없지!", startQuiz);
+            const nextAction = () => {
+                if (gameState.isBossFight) {
+                    let bossMessage = "";
+                    if (gameState.difficulty === '상') {
+                        bossMessage = "정말 대단한 지식이군 용사여... 나를 물리치다니..";
+                    } else {
+                        bossMessage = "크윽.. 다음 스테이지에서 두고보자!";
+                    }
+                    showMessage(bossMessage, handleStageClear);
                 } else {
-                    handleStageClear();
+                    prepareNextEncounter();
                 }
+            };
+
+            if (gameState.isBossFight) {
+                setTimeout(nextAction, 1500);
             } else {
-                showMessage("몬스터를 물리쳤다!", prepareNextEncounter);
+                showTemporaryMessage("몬스터를 물리쳤다!", 1500, nextAction);
             }
         }
         
         function handleIncorrectAnswer() {
             quizContainer.style.display = 'none';
             monsterInfoDisplay.style.display = 'none';
-            gameState.animation = { type: 'damage', progress: 0, duration: 1000 };
+            gameState.animation = { type: 'damage', progress: 0, duration: 1000, shake: 10 };
             gameState.lives--;
             updateStatus();
 
             if (gameState.lives <= 0) {
-                gameState.animation = { type: 'game-over', progress: 0, duration: 2500 };
+                gameState.animation = { type: 'game-over', progress: 0, duration: 2500, shake: 0 };
+                effectParticles = [];
+                for(let i = 0; i < 50; i++) {
+                    effectParticles.push({
+                        type: 'despair',
+                        x: Math.random() * canvas.width,
+                        y: canvas.height + Math.random() * 100,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: -Math.random() * 5 - 2,
+                        size: Math.random() * 6 + 2,
+                        color: `rgba(80, 80, 80, ${Math.random() * 0.5 + 0.3})`,
+                        life: 1
+                    });
+                }
                 setTimeout(() => {
                     showMessage("GAME OVER", () => showScreen('start-screen'));
                 }, 2500);
@@ -736,9 +1012,9 @@
             if (Math.random() < 0.3) gameState.lives = Math.min(5, gameState.lives + 1);
             updateStatus();
 
-            const diff = gameState.difficulty;
-            const defeated = gameState.monstersDefeated;
-            let bossConditionMet = (diff === '하' && defeated >= 5) || (diff === '중' && defeated >= 8) || (diff === '상' && defeated >= 10);
+            const bossThresholds = { '하': 5, '중': 8, '상': 10 };
+            const correctAnswers = gameState.questionsCorrect;
+            let bossConditionMet = correctAnswers >= bossThresholds[gameState.difficulty];
             
             if (bossConditionMet) {
                 gameState.isBossFight = true;
@@ -752,23 +1028,25 @@
         function handleStageClear() {
             gameState.clearedStages[gameState.difficulty] = true;
             gameState.player.level++;
-            gameState.animation = { type: 'game-clear', progress: 0, duration: 3000 };
+            gameState.animation = { type: 'game-clear', progress: 0, duration: 3000, shake: 0 };
             effectParticles = [];
-            for (let i = 0; i < 100; i++) {
+            for (let i = 0; i < 150; i++) {
                 effectParticles.push({
                     type: 'confetti',
                     x: Math.random() * canvas.width,
                     y: Math.random() * -canvas.height,
-                    vx: Math.random() * 4 - 2,
-                    vy: Math.random() * 5 + 2,
-                    size: Math.random() * 8 + 4,
-                    color: `hsl(${Math.random() * 360}, 100%, 70%)`
+                    vx: Math.random() * 6 - 3,
+                    vy: Math.random() * 5 + 3,
+                    size: Math.random() * 10 + 5,
+                    color: `hsl(${Math.random() * 360}, 100%, 70%)`,
+                    rotation: Math.random() * 360,
+                    life: 1
                 });
             }
             
             setTimeout(() => {
-                saveGame();
-                showMessage(`난이도 '${gameState.difficulty}' 클리어! 레벨 업! (현재 LV.${gameState.player.level})`, setupDifficultyScreen);
+                saveGame(false); // 메시지 없이 저장
+                showMessage(`난이도 '${gameState.difficulty}' 클리어!<br>레벨 업! (현재 LV.${gameState.player.level})`, setupDifficultyScreen);
             }, 3000);
         }
 
@@ -776,11 +1054,29 @@
             document.getElementById('status-name').textContent = gameState.player.name;
             document.getElementById('status-level').textContent = gameState.player.level;
             document.getElementById('status-lives').textContent = '❤️'.repeat(gameState.lives);
+            updateProgressDisplay();
         }
         
+        function updateProgressDisplay() {
+            const bossThresholds = { '하': 5, '중': 8, '상': 10 };
+            const needed = bossThresholds[gameState.difficulty];
+            const remaining = Math.max(0, needed - gameState.questionsCorrect);
+            
+            let progressText = `푼 문제: ${gameState.questionsAttempted} | 정답: ${gameState.questionsCorrect}`;
+            if (!gameState.isBossFight && !gameState.clearedStages[gameState.difficulty]) {
+                progressText += ` | 보스까지: ${remaining}문제`;
+            }
+            progressDisplay.textContent = progressText;
+        }
+
         function showMessage(text, callback) {
-            messageText.textContent = text;
-            messageModal.style.display = 'block';
+            messageText.innerHTML = text;
+            messageModal.style.display = 'flex';
+            
+            const newOkBtn = messageOkBtn.cloneNode(true);
+            messageOkBtn.parentNode.replaceChild(newOkBtn, messageOkBtn);
+            messageOkBtn = newOkBtn; 
+
             messageOkBtn.onclick = () => {
                 messageModal.style.display = 'none';
                 if (callback) callback();
@@ -790,25 +1086,34 @@
         function showTemporaryMessage(text, duration, callback) {
             tempMessageOverlay.textContent = text;
             tempMessageOverlay.classList.add('visible');
-            setTimeout(() => {
+            
+            const timeoutCallback = () => {
                 tempMessageOverlay.classList.remove('visible');
                 if (callback) callback();
-            }, duration);
+            };
+
+            // This is not a skippable event anymore to prevent bugs
+            setTimeout(timeoutCallback, duration);
         }
 
-        function saveGame() {
+        function saveGame(showAlert = true) {
             localStorage.setItem('crimeQuizRPGSave', JSON.stringify({
                 player: gameState.player,
                 clearedStages: gameState.clearedStages
             }));
+            if (showAlert) {
+                showMessage("게임이 저장되었습니다.");
+            }
         }
 
         function loadGame() {
             const saveData = localStorage.getItem('crimeQuizRPGSave');
             if (saveData) {
                 const parsedData = JSON.parse(saveData);
+                resetGameState();
                 gameState.player = parsedData.player;
                 gameState.clearedStages = parsedData.clearedStages;
+                document.getElementById('character-name').value = gameState.player.name;
                 showMessage(`'${gameState.player.name}'님의 데이터를 불러왔습니다.`, setupDifficultyScreen);
             } else {
                 showMessage("저장된 게임이 없습니다.");
@@ -869,66 +1174,130 @@
                         x += Math.sin(progress * Math.PI * 10) * 10;
                     }
                     ctx.drawImage(img, x, y, size, size);
-                } else {
-                    ctx.fillStyle = 'red';
-                    ctx.font = "bold 16px 'Noto Sans KR', sans-serif";
-                    ctx.textAlign = 'center';
-                    ctx.fillText(`${gameState.currentMonster.type}급 몬스터\n이미지 로딩 실패`, canvas.width * 0.8 - (Math.min(canvas.width, canvas.height) * 0.15), canvas.height * 0.4);
                 }
             }
         }
+        
+        function drawSharpSlash(x, y, height, width, alpha, color, shadowColor, shadowBlur, lineWidth) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.shadowColor = shadowColor;
+            ctx.shadowBlur = shadowBlur;
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y - height / 2);
+            ctx.bezierCurveTo(
+                x + width * 0.8, y - height * 0.2,
+                x + width * 0.8, y + height * 0.2,
+                x, y + height / 2
+            );
+            ctx.stroke();
+            ctx.restore();
+        }
 
         function drawEffects(deltaTime) {
+            // Attack Animation
             if (gameState.animation.type === 'attack') {
-                const progress = gameState.animation.progress / gameState.animation.duration;
+                const progress = Math.min(1, gameState.animation.progress / gameState.animation.duration);
                 const level = gameState.player.level;
-                const startX = canvas.width * 0.25;
+                const startX = canvas.width * 0.35;
                 const startY = canvas.height * 0.45;
                 const endX = canvas.width * 0.7;
-                const endY = canvas.height * 0.45;
-
+                
                 if (gameState.player.class === '전사') {
                     ctx.save();
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${1 - progress})`;
-                    ctx.lineWidth = 5 + level * 2;
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                    ctx.quadraticCurveTo(
-                        startX + (endX - startX) * progress,
-                        startY - 100 * Math.sin(progress * Math.PI),
-                        startX + (endX - startX) * progress * 1.2,
-                        startY
-                    );
-                    ctx.stroke();
-                    if (level > 2) {
-                         ctx.strokeStyle = `rgba(255, 223, 0, ${0.7 - progress})`;
-                         ctx.lineWidth = 3 + level;
-                         ctx.beginPath();
-                         ctx.moveTo(startX, startY + 20);
-                         ctx.quadraticCurveTo(
-                            startX + (endX - startX) * progress,
-                            startY + 20 - 80 * Math.sin(progress * Math.PI),
-                            startX + (endX - startX) * progress * 1.1,
-                            startY + 20
-                         );
-                         ctx.stroke();
+                    ctx.lineCap = 'round';
+                    const easeOutProgress = 1 - Math.pow(1 - progress, 3);
+                    const travelX = startX + (endX - startX) * easeOutProgress;
+                    const alpha = 1 - easeOutProgress;
+
+                    if (level === 1) {
+                        drawSharpSlash(travelX, startY, 100, 50, alpha, 'white', 'white', 10, 5);
+                    } else if (level === 2) {
+                        drawSharpSlash(travelX, startY, 120, 60, alpha, 'yellow', 'yellow', 20, 8);
+                    } else if (level === 3) {
+                        drawSharpSlash(travelX, startY, 150, 70, alpha, 'red', 'red', 30, 12);
+                    } else { // Level 4+
+                        const p_ultimate = Math.sin(progress * Math.PI);
+                        drawSharpSlash(travelX, startY, 200, 100, p_ultimate, 'orange', 'red', 40, 20);
+                        if (progress > 0.1 && progress < 0.9) {
+                            for (let i = 0; i < 2; i++) {
+                                effectParticles.push({
+                                    type: 'spark',
+                                    x: travelX,
+                                    y: startY + (Math.random() - 0.5) * 150,
+                                    vx: (Math.random() - 0.5) * 5,
+                                    vy: (Math.random() - 0.5) * 5,
+                                    size: Math.random() * 5 + 2,
+                                    color: ['white', 'yellow', 'orange'][Math.floor(Math.random() * 3)],
+                                    life: 0.5
+                                });
+                            }
+                        }
                     }
                     ctx.restore();
                 } else if (gameState.player.class === '마법사') {
-                    if (effectParticles.length === 0) {
-                        for (let i = 0; i < 5 + level * 3; i++) {
-                            effectParticles.push({
-                                type: 'ice',
-                                x: startX,
-                                y: startY,
-                                vx: (endX - startX) / (500 + Math.random() * 200),
-                                vy: (Math.random() - 0.5) * 2,
-                                size: 8 + level,
-                                rotation: Math.random() * Math.PI * 2,
-                                life: 1
-                            });
+                    ctx.save();
+                    const currentX = startX + (endX - startX) * progress;
+                    const currentY = startY;
+                    if (level === 1) {
+                        ctx.fillStyle = `rgba(173, 216, 230, ${1 - progress})`;
+                        ctx.shadowColor = 'cyan';
+                        ctx.shadowBlur = 15;
+                        ctx.beginPath();
+                        ctx.arc(currentX, currentY, 20, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else if (level === 2) {
+                        ctx.fillStyle = `rgba(100, 180, 255, ${1 - progress})`;
+                        ctx.shadowColor = 'blue';
+                        ctx.shadowBlur = 20;
+                        ctx.beginPath();
+                        ctx.arc(currentX, currentY, 30, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = `rgba(200, 240, 255, ${1 - progress})`;
+                        ctx.lineWidth = 5;
+                         for(let i=0; i<6; i++) {
+                            const angle = i * Math.PI / 3 + progress * 2 * Math.PI;
+                            ctx.beginPath();
+                            ctx.moveTo(currentX + Math.cos(angle)*30, currentY + Math.sin(angle)*30);
+                            ctx.lineTo(currentX + Math.cos(angle)*40, currentY + Math.sin(angle)*40);
+                            ctx.stroke();
                         }
+                    } else if (level === 3) {
+                         const size = 45;
+                         ctx.fillStyle = `rgba(200, 240, 255, ${1-progress})`;
+                         ctx.strokeStyle = 'white';
+                         ctx.shadowColor = 'white';
+                         ctx.shadowBlur = 30;
+                         ctx.lineWidth = 4;
+                         ctx.translate(currentX, currentY);
+                         ctx.rotate(progress * Math.PI * -4);
+                         ctx.beginPath();
+                         for(let i=0; i<6; i++) {
+                            const angle = i * Math.PI / 3;
+                            ctx.moveTo(0,0);
+                            ctx.lineTo(Math.cos(angle)*size, Math.sin(angle)*size);
+                            ctx.lineTo(Math.cos(angle + Math.PI/6)*size*0.6, Math.sin(angle + Math.PI/6)*size*0.6);
+                         }
+                         ctx.closePath();
+                         ctx.fill();
+                         ctx.stroke();
+                    } else { // Level 4+
+                         for(let i=0; i<5; i++) {
+                            const p = (progress * 1.5 + i*0.2) % 1;
+                            const size = 120 * p;
+                            ctx.strokeStyle = `rgba(180, 230, 255, ${1-p})`;
+                            ctx.lineWidth = 20 * (1-p);
+                            ctx.shadowColor = 'cyan';
+                            ctx.shadowBlur = 30;
+                            ctx.beginPath();
+                            ctx.arc(endX, startY, size, 0, Math.PI * 2);
+                            ctx.stroke();
+                         }
                     }
+                    ctx.restore();
                 }
             } else if (gameState.animation.type === 'dungeon-intro') {
                 ctx.fillStyle = '#2a2845';
@@ -938,15 +1307,15 @@
                 });
             } else if (gameState.animation.type === 'game-over') {
                 const progress = gameState.animation.progress / gameState.animation.duration;
-                ctx.fillStyle = `rgba(0, 0, 0, ${progress * 0.7})`;
+                ctx.fillStyle = `rgba(0, 0, 0, ${progress * 0.8})`;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.globalCompositeOperation = 'saturation';
-                ctx.fillStyle = 'black';
+            } else if (gameState.animation.type === 'game-clear') {
+                const progress = gameState.animation.progress / gameState.animation.duration;
+                ctx.fillStyle = `rgba(255, 223, 0, ${Math.sin(progress * Math.PI) * 0.3})`;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.globalCompositeOperation = 'source-over';
             }
             
-            // 파티클 업데이트 및 그리기
+            // Particle Effects
             effectParticles.forEach((p, index) => {
                 p.x += p.vx * (deltaTime / 16);
                 p.y += p.vy * (deltaTime / 16);
@@ -961,24 +1330,18 @@
                 ctx.globalAlpha = p.life > 0 ? p.life : 0;
                 ctx.translate(p.x, p.y);
                 
-                if (p.type === 'ice') {
-                    ctx.rotate(p.rotation);
-                    ctx.fillStyle = `rgba(173, 216, 230, ${p.life})`;
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${p.life})`;
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    for (let i = 0; i < 5; i++) {
-                        let angle = (i / 5) * Math.PI * 2;
-                        ctx.lineTo(Math.cos(angle) * p.size, Math.sin(angle) * p.size);
-                        angle += (0.5 / 5) * Math.PI * 2;
-                        ctx.lineTo(Math.cos(angle) * p.size * 0.5, Math.sin(angle) * p.size * 0.5);
-                    }
-                    ctx.closePath();
-                    ctx.fill();
-                    ctx.stroke();
-                } else if (p.type === 'confetti') {
+                if (p.type === 'confetti') {
+                    ctx.rotate(p.rotation * Math.PI / 180);
                     ctx.fillStyle = p.color;
                     ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                } else if (p.type === 'despair') {
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (p.type === 'spark') {
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
                 }
 
                 ctx.restore();
@@ -995,8 +1358,17 @@
             if (gameState.animation.type) {
                 gameState.animation.progress += deltaTime;
                 if (gameState.animation.progress >= gameState.animation.duration) {
-                    gameState.animation.type = null;
+                    if(gameState.animation.type !== 'game-over' && gameState.animation.type !== 'game-clear') {
+                       gameState.animation.type = null;
+                    }
                 }
+            }
+
+            ctx.save();
+            if(gameState.animation.shake > 0) {
+                const shakeAmount = gameState.animation.shake * Math.sin(gameState.animation.progress);
+                ctx.translate(Math.random() * shakeAmount - shakeAmount/2, Math.random() * shakeAmount - shakeAmount/2);
+                gameState.animation.shake *= 0.9;
             }
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1010,6 +1382,7 @@
             }
             
             drawEffects(deltaTime);
+            ctx.restore();
 
             requestAnimationFrame(gameLoop);
         }
@@ -1023,6 +1396,8 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
+        canvas.addEventListener('click', skipCurrentEvent);
+
         document.getElementById('start-new-game-btn').addEventListener('click', () => {
             initAndPlayBGM();
             startNewGame();
@@ -1031,7 +1406,16 @@
             initAndPlayBGM();
             loadGame();
         });
-        document.getElementById('save-game-btn').addEventListener('click', saveGame);
+        document.getElementById('save-game-btn').addEventListener('click', () => saveGame(true));
+        
+        document.getElementById('change-character-btn').addEventListener('click', () => {
+            showScreen('character-selection-screen');
+        });
+
+        document.getElementById('back-to-difficulty-btn').addEventListener('click', () => {
+            saveGame(false); // 메시지 없이 저장
+            setupDifficultyScreen();
+        });
 
         document.querySelectorAll('.char-card').forEach(card => {
             card.addEventListener('click', () => {
@@ -1046,10 +1430,17 @@
             if (!name) { showMessage("캐릭터 이름을 입력해주세요."); return; }
             if (!selected) { showMessage("캐릭터를 선택해주세요."); return; }
             
+            // 레벨과 클리어 정보 유지
+            const level = gameState.player.level || 1;
+            const clearedStages = gameState.clearedStages || { '하': false, '중': false, '상': false };
+
+            // 캐릭터 정보 업데이트
             gameState.player.name = name;
             gameState.player.class = selected.dataset.class;
             gameState.player.gender = selected.dataset.gender;
             gameState.player.imageKey = `${gameState.player.class}_${gameState.player.gender}`;
+            gameState.player.level = level;
+            gameState.clearedStages = clearedStages;
             
             setupDifficultyScreen();
         });
@@ -1067,6 +1458,13 @@
         q2OptionsEl.addEventListener('click', (e) => {
             const target = e.target.closest('.q2-btn');
             if (target) handleQ2Answer(target.dataset.answerIndex);
+        });
+
+        document.getElementById('instructions-btn').addEventListener('click', () => {
+            document.getElementById('instructions-modal').style.display = 'flex';
+        });
+        document.getElementById('instructions-close-btn').addEventListener('click', () => {
+            document.getElementById('instructions-modal').style.display = 'none';
         });
 
     </script>
