@@ -321,12 +321,12 @@
              padding: 15px;
              box-sizing: border-box;
              border-top: 3px solid var(--primary-color);
-             display: none; /* Initially hidden */
+             display: none;
              flex-direction: column;
              align-items: center;
              gap: 10px;
              z-index: 10;
-             max-height: 60%; /* Increased max-height */
+             max-height: 60%;
              height: auto;
          }
          #quiz-case {
@@ -341,7 +341,7 @@
              flex-shrink: 1;
              -webkit-overflow-scrolling: touch;
          }
-         #q1-options, #q2-options {
+         #q1-options {
              width: 100%;
              display: flex;
              justify-content: center;
@@ -350,12 +350,14 @@
              flex-shrink: 0;
          }
          #q2-options {
+             width: 100%;
+             display: flex;
              flex-direction: column;
              align-items: center;
-             flex-wrap: nowrap;
              overflow-y: auto;
-             max-height: 220px; /* Increased max-height */
-             padding: 5px; /* Added padding */
+             flex-grow: 1; /* Take remaining space */
+             min-height: 0; /* Important for flex-grow in a flex column */
+             padding-right: 10px;
              box-sizing: border-box;
              -webkit-overflow-scrolling: touch;
          }
@@ -373,8 +375,8 @@
               text-align: left;
               font-size: 0.9em;
               padding: 10px;
-              flex-shrink: 0; /* Prevent buttons from shrinking */
-              margin-bottom: 5px; /* Add space between buttons */
+              flex-shrink: 0;
+              margin-bottom: 5px;
          }
          
          .modal-overlay {
@@ -401,7 +403,7 @@
              max-width: 90%;
              max-height: 90%;
              overflow-y: auto;
-             -webkit-overflow-scrolling: touch; /* 모바일 스크롤 */
+             -webkit-overflow-scrolling: touch;
          }
          #message-text {
              font-size: 1.2em;
@@ -1360,22 +1362,29 @@
                  const endX = canvas.width * 0.7;
                  
                  if (gameState.player.class === '전사') {
-                    const easeOutProgress = 1 - Math.pow(1 - progress, 3);
+                    const easeOutProgress = 1 - Math.pow(1 - progress, 4);
                     const travelX = startX + (endX - startX) * easeOutProgress;
                     const alpha = Math.sin(progress * Math.PI);
 
-                    if (level <= 1) drawSharpSlash(travelX, startY, 100, 50, alpha, 'white', 'white', 10, 5);
-                    else if (level === 2) drawSharpSlash(travelX, startY, 120, 60, alpha, '#ffdd00', '#ffdd00', 20, 8);
-                    else if (level === 3) {
-                        drawSharpSlash(travelX, startY - 20, 150, 70, alpha, '#ff8800', '#ff4400', 30, 12);
-                        drawSharpSlash(travelX + 20, startY + 20, 150, 70, alpha * 0.7, '#ff8800', '#ff4400', 20, 8);
+                    if (level <= 1) {
+                        drawSharpSlash(travelX, startY, 120, 60, alpha, 'white', 'white', 15, 8);
+                    } else if (level === 2) {
+                        drawSharpSlash(travelX, startY, 140, 70, alpha, '#ffdd00', '#ffdd00', 25, 10);
+                        if(progress > 0.2 && progress < 0.8) {
+                           drawSharpSlash(travelX + 10, startY, 100, 50, alpha * 0.5, 'white', 'white', 15, 5);
+                        }
+                    } else if (level === 3) {
+                        const p1 = Math.sin(Math.min(1, progress / 0.7) * Math.PI);
+                        const p2 = Math.sin(Math.max(0, (progress - 0.3) / 0.7) * Math.PI);
+                        drawSharpSlash(endX, startY - 30, 180, 80, p1, '#ff8800', '#ff4400', 35, 15, -20);
+                        drawSharpSlash(endX, startY + 30, 180, 80, p2, '#ff8800', '#ff4400', 35, 15, 20);
                     } else { // Level 4+
-                        const p_ultimate = Math.sin(progress * Math.PI);
+                        const p_main = Math.sin(Math.min(1, progress / 0.6) * Math.PI);
+                        const p_cross = Math.sin(Math.max(0, (progress-0.4)/0.6) * Math.PI);
                         ctx.save();
                         ctx.translate(endX, startY);
-                        ctx.rotate(progress * Math.PI * -6);
-                        drawSharpSlash(0, 0, 250, 120, p_ultimate, 'cyan', 'white', 50, 25);
-                        drawSharpSlash(0, 0, 250, 120, p_ultimate * 0.5, 'red', 'white', 50, 15);
+                        drawSharpSlash(0, 0, 300, 150, p_main, 'cyan', 'white', 60, 30, 45);
+                        drawSharpSlash(0, 0, 300, 150, p_cross, 'red', 'white', 60, 20, -45);
                         ctx.restore();
                     }
                  } else if (gameState.player.class === '마법사') {
@@ -1441,16 +1450,18 @@
              });
          }
 
-         function drawSharpSlash(x, y, height, width, alpha, color, shadowColor, shadowBlur, lineWidth) {
+         function drawSharpSlash(x, y, height, width, alpha, color, shadowColor, shadowBlur, lineWidth, angle = 0) {
             ctx.save();
             ctx.globalAlpha = alpha;
             ctx.strokeStyle = color;
             ctx.lineWidth = lineWidth;
             ctx.shadowColor = shadowColor;
             ctx.shadowBlur = shadowBlur;
+            ctx.translate(x, y);
+            ctx.rotate(angle * Math.PI / 180);
             ctx.beginPath();
-            ctx.moveTo(x, y - height / 2);
-            ctx.bezierCurveTo(x + width * 0.8, y - height * 0.2, x + width * 0.8, y + height * 0.2, x, y + height / 2);
+            ctx.moveTo(0, -height / 2);
+            ctx.bezierCurveTo(width * 0.8, -height * 0.2, width * 0.8, height * 0.2, 0, height / 2);
             ctx.stroke();
             ctx.restore();
          }
