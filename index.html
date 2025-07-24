@@ -8,7 +8,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Cinzel+Decorative:wght@700&display=swap');
 
         :root {
-            --bg-color: #2c2a4a;
+            --bg-color: #1a1832;
             --surface-color: #4f4c7a;
             --primary-color: #9b59b6;
             --secondary-color: #8e44ad;
@@ -43,10 +43,11 @@
             position: relative;
             background-color: #1e1c3a;
             border-radius: 15px;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            box-shadow: 0 0 40px rgba(0,0,0,0.7), inset 0 0 15px rgba(0,0,0,0.5);
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            border: 3px solid #000;
         }
 
         .screen {
@@ -61,13 +62,25 @@
             align-items: center;
             padding: 20px;
             box-sizing: border-box;
-            background: linear-gradient(135deg, var(--bg-color), #3e3b6b);
+            background: linear-gradient(135deg, #2c2a4a, #3e3b6b);
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.5s ease, visibility 0.5s ease;
             text-align: center;
             overflow-y: auto;
         }
+        
+        .screen::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+        }
+
 
         .screen.active {
             opacity: 1;
@@ -85,6 +98,7 @@
             border: 2px solid var(--accent-color);
             max-width: 80%;
             text-align: center;
+            box-shadow: 0 0 20px var(--accent-color);
         }
         .story-content h2 {
             font-family: var(--title-font);
@@ -155,33 +169,34 @@
 
         .btn {
             padding: 12px 25px;
-            border: none;
+            border: 2px solid #111;
             border-radius: 8px;
-            background-color: var(--primary-color);
+            background: linear-gradient(145deg, #a868c0, #8e44ad);
             color: var(--text-color);
             font-size: 1.1em;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px var(--secondary-color);
+            box-shadow: 0 5px 0 #6c3483, 0 6px 10px rgba(0,0,0,0.4);
             transform: translateY(0);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
         .btn:hover {
-            background-color: #a569bd;
-            transform: translateY(-2px);
-            box-shadow: 0 6px var(--secondary-color);
+            background: linear-gradient(145deg, #b37cd0, #9b59b6);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 0 #6c3483, 0 9px 12px rgba(0,0,0,0.3);
         }
 
         .btn:active {
             transform: translateY(2px);
-            box-shadow: 0 2px var(--secondary-color);
+            box-shadow: 0 3px 0 #6c3483, 0 4px 5px rgba(0,0,0,0.4);
         }
         
         .btn.disabled {
-            background-color: #7f8c8d;
+            background: linear-gradient(145deg, #839192, #616a6b);
             cursor: not-allowed;
-            box-shadow: 0 4px #616a6b;
+            box-shadow: 0 5px 0 #515a5a;
             opacity: 0.6;
         }
         
@@ -191,14 +206,22 @@
         }
         
         .btn-challenge {
-           background-color: var(--challenge-color);
-           box-shadow: 0 4px #d35400;
+           background: linear-gradient(145deg, #f39c12, #d35400);
+           box-shadow: 0 5px 0 #a04000;
         }
         .btn-challenge:hover {
-           background-color: #f39c12;
-           box-shadow: 0 6px #d35400;
+           background: linear-gradient(145deg, #f5b041, #e67e22);
+           box-shadow: 0 8px 0 #a04000;
         }
-
+        
+        .btn-danger {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            box-shadow: 0 5px 0 #922b21;
+        }
+        .btn-danger:hover {
+            background: linear-gradient(145deg, #ec7063, #e74c3c);
+            box-shadow: 0 8px 0 #922b21;
+        }
 
         #character-selection-screen .char-options, #ingame-char-change-modal .char-options {
             display: flex;
@@ -212,10 +235,12 @@
             cursor: pointer;
             border: 3px solid transparent;
             transition: all 0.3s ease;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
         }
         .char-card.selected {
             border-color: var(--accent-color);
             transform: scale(1.05);
+            box-shadow: 0 0 15px var(--accent-color), inset 0 0 10px rgba(0,0,0,0.5);
         }
         .char-card img {
             width: 100px;
@@ -318,7 +343,7 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            background-color: rgba(44, 42, 74, 0.95);
+            background-color: rgba(26, 24, 50, 0.95);
             padding: 15px;
             box-sizing: border-box;
             border-top: 3px solid var(--primary-color);
@@ -327,6 +352,7 @@
             flex-direction: column;
             gap: 10px;
             max-height: 60%;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
         }
         #quiz-case {
             flex-shrink: 1;
@@ -594,6 +620,7 @@
              <div class="button-group">
                   <button id="save-game-btn" class="btn">게임 저장</button>
                   <button id="change-character-btn" class="btn">캐릭터 변경</button>
+                  <button id="restart-from-scratch-btn" class="btn btn-danger">처음부터 다시하기</button>
              </div>
         </div>
 
@@ -736,6 +763,8 @@
         let dungeonPillars = [];
         let effectParticles = [];
         let gameOverDebris = [];
+        let lavaParticles = [];
+        let isInputLocked = false;
 
         // 퀴즈 데이터
         const quizzes = [
@@ -806,7 +835,7 @@
             { id: 314, type: 'two-step', difficulty: '상', case: "채무자 갑은 도망 중이었다. 채권자 을은 우연히 길에서 갑을 마주쳐 도망을 막기 위해 그의 가방을 붙잡았고, 이로 인해 가방이 파손되었다. 이 경우 을의 행위는 위법성이 조각된다.", q1: 'O', q2_question: "위 사례에서 을의 행위에 해당하는 위법성 조각 사유는 무엇인가?", q2: ["정당방위", "긴급 피난", "자구 행위", "정당 행위"], answerIndex: 2, explanation: "국가의 구제를 기대하기 어려운 상황에서 청구권 실현을 위한 불가피한 자구 행위다." },
             { id: 315, type: 'two-step', difficulty: '상', case: "경찰청은 불량 식재료를 유통한 식품 업체에 대한 정보를 수사 후 국민 건강 보호 차원에서 언론에 공표하였다. 이로 인해 업체의 명예는 실추되었다. 이 경우 경찰청의 행위는 위법성이 인정된다.", q1: 'X', q2_question: "위 사례에서 경찰청의 행위에 해당하는 위법성 조각 사유는 무엇인가?", q2: ["정당방위", "긴급 피난", "자구 행위", "정당 행위"], answerIndex: 3, explanation: "공익 목적과 진실성, 필요성이 인정되므로 정당 행위로서 위법성이 조각된다." },
             { id: 316, type: 'two-step', difficulty: '상', case: "야간 근무 중인 경비원 갑은 침입자를 제지하던 중 반격을 받고, 시설 보호를 위해 물리력을 사용해 제압하였다. 침입자는 경미한 상처를 입었다. 이 경우 갑의 행위는 형법상 범죄로 성립한다.", q1: 'X', q2_question: "위 사례에서 갑의 행위에 해당하는 위법성 조각 사유는 무엇인가?", q2: ["긴급 피난", "정당방위", "자구 행위", "정당 행위"], answerIndex: 1, explanation: "현재의 부당한 침해에 대응한 자기방어로서 정당방위에 해당한다." },
-            { id: 406, type: 'two-step', difficulty: '최상', case: ""학생 갑은 학교 폭력 가해자로 지목되어 징계가 확정되기 전에 전면 등교 금지 조치를 받았다. 이러한 학교의 조치는 우리 헌법상 형사사법 절차에 적용되는 기본권 보호 원칙에 비추어 정당하다고 볼 수 있는가?", q1: 'X', q2_question: "위 상황에서 가장 중요한 인권 보장 원칙은 무엇인가?", q2: ["진술 거부권", "변호인의 조력을 받을 권리", "무죄 추정의 원칙", "증거재판주의"], answerIndex: 2, explanation: "형사 절차에서 유죄 확정 전까지는 무죄로 추정해야 하며, 징계 확정 전 불이익 조치는 위 원칙에 반한다." },
+            { id: 406, type: 'two-step', difficulty: '최상', case: "학생 갑은 학교 폭력 가해자로 지목되어 징계가 확정되기 전에 전면 등교 금지 조치를 받았다. 이러한 학교의 조치는 우리 헌법상 형사사법 절차에 적용되는 기본권 보호 원칙에 비추어 정당하다고 볼 수 있는가?", q1: 'X', q2_question: "위 상황에서 가장 중요한 인권 보장 원칙은 무엇인가?", q2: ["진술 거부권", "변호인의 조력을 받을 권리", "무죄 추정의 원칙", "증거재판주의"], answerIndex: 2, explanation: "형사 절차에서 유죄 확정 전까지는 무죄로 추정해야 하며, 징계 확정 전 불이익 조치는 위 원칙에 반한다." },
             { id: 407, type: 'two-step', difficulty: '최상', case: "갑은 2022년 12월 31일 범죄를 저질렀고, 2023년 1월 1일부터 형량이 감경된 개정 법률이 시행되었다. 법원은 갑에게 개정법을 적용했다. 이 경우 법원의 판단은 법적으로 타당하다.", q1: 'O', q2_question: "이 경우 법원의 판단을 뒷받침하는 법 원칙은 무엇인가?", q2: ["죄형 법정주의의 예외", "피고에게 유리한 소급 적용 허용", "적법 절차 원칙", "법관 재량주의"], answerIndex: 1, explanation: "피고에게 유리한 경우에는 소급하여 법을 적용할 수 있다. 형벌 불소급 원칙의 예외이다." }
         ];
 
@@ -1000,6 +1029,7 @@
         }
 
         function skipCurrentEvent() {
+            if (isInputLocked) return;
             if (gameState.animation.type === 'dungeon-intro' && gameState.isSkippable && typeof gameState.onSkip === 'function') {
                 gameState.onSkip();
             }
@@ -1095,6 +1125,7 @@
                 q2OptionsEl.style.display = 'none';
             }
             quizContainer.style.display = 'flex';
+            unlockInput();
         }
         
         function displayQ2ForTwoStep() {
@@ -1111,9 +1142,13 @@
                 btn.dataset.answerIndex = index;
                 q2OptionsEl.appendChild(btn);
             });
+            unlockInput();
         }
 
         function handleQ1Answer(answer) {
+            if (isInputLocked) return;
+            lockInput();
+
             const quiz = gameState.currentQuiz;
             if (answer === quiz.q1) {
                 if (quiz.type === 'one-step-ox') {
@@ -1127,6 +1162,9 @@
         }
 
         function handleQ2Answer(index) {
+            if (isInputLocked) return;
+            lockInput();
+
             if (index == gameState.currentQuiz.answerIndex) {
                 handleCorrectAnswer();
             } else {
@@ -1159,11 +1197,8 @@
                 }
             };
 
-            if (gameState.isBossFight) {
-                setTimeout(nextAction, 1000);
-            } else {
-                showTemporaryMessage("몬스터를 물리쳤다!", 1000, nextAction);
-            }
+            const message = gameState.isBossFight ? "보스를 공격했다!" : "몬스터를 물리쳤다!";
+            showTemporaryMessage(message, 1000, nextAction);
         }
         
         function handleIncorrectAnswer() {
@@ -1326,7 +1361,11 @@
             progressDisplay.textContent = progressText;
         }
 
+        function lockInput() { isInputLocked = true; }
+        function unlockInput() { isInputLocked = false; }
+
         function showMessage(text, callback) {
+            lockInput();
             messageText.innerHTML = text;
             messageModal.style.display = 'flex';
             
@@ -1336,16 +1375,19 @@
 
             messageOkBtn.onclick = () => {
                 messageModal.style.display = 'none';
+                unlockInput();
                 if (callback) callback();
             };
         }
         
         function showTemporaryMessage(text, duration, callback) {
+            lockInput();
             tempMessageOverlay.textContent = text;
             tempMessageOverlay.classList.add('visible');
             
             setTimeout(() => {
                 tempMessageOverlay.classList.remove('visible');
+                unlockInput();
                 if (callback) callback();
             }, duration);
         }
@@ -1406,6 +1448,10 @@
 
             ctx.fillStyle = grad1;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (difficulty === '중') drawChains();
+            if (difficulty === '상' || difficulty === '도전자' || gameState.isBossFight) drawLava();
+
             ctx.fillStyle = grad2;
             ctx.fillRect(0, canvas.height * 0.6, canvas.width, canvas.height * 0.4);
             ctx.strokeStyle = wall;
@@ -1416,6 +1462,54 @@
                 }
             }
         }
+        
+        function drawChains() {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 5;
+            for(let i=0; i<5; i++) {
+                const x = (canvas.width / 6) * (i + 1);
+                const yStart = -20 + Math.sin(Date.now() / 1000 + i) * 10;
+                ctx.beginPath();
+                ctx.moveTo(x + Math.sin(Date.now() / 800 + i*2) * 5, yStart);
+                ctx.lineTo(x, canvas.height * 0.2);
+                ctx.stroke();
+            }
+        }
+
+        function drawLava() {
+            const lavaHeight = canvas.height * 0.1;
+            const y = canvas.height * 0.6;
+            const grad = ctx.createLinearGradient(0, y, 0, y + lavaHeight);
+            grad.addColorStop(0, '#ff8c00');
+            grad.addColorStop(0.5, '#ff4500');
+            grad.addColorStop(1, '#dc143c');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, y, canvas.width, lavaHeight);
+            
+            // Lava bubbles
+            if(Math.random() < 0.2) {
+                lavaParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: y + Math.random() * lavaHeight,
+                    radius: Math.random() * 10 + 5,
+                    life: 1,
+                    opacity: Math.random() * 0.5 + 0.5
+                });
+            }
+
+            lavaParticles.forEach((p, i) => {
+                p.y -= 0.5;
+                p.life -= 0.01;
+                p.radius *= 0.99;
+                if(p.life <= 0) lavaParticles.splice(i, 1);
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 0, ${p.opacity * p.life})`;
+                ctx.fill();
+            });
+        }
+
 
         function drawCharacter(bobbing) {
             const img = loadedImages[gameState.player.imageKey];
@@ -1707,6 +1801,11 @@
         
         document.getElementById('change-character-btn').addEventListener('click', () => {
             showScreen('character-selection-screen');
+        });
+        
+        document.getElementById('restart-from-scratch-btn').addEventListener('click', () => {
+            saveGame(false); // Save current progress silently
+            startNewGame(); // Start a completely new game
         });
 
         document.getElementById('back-to-difficulty-btn').addEventListener('click', () => {
