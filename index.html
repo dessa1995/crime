@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>던전 법률 퀴즈 RPG</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Cinzel+Decorative:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Cinzel+Decorative:wght@700&family=MedievalSharp&display=swap');
 
         :root {
-            --bg-color: #1a1832;
-            --surface-color: #4f4c7a;
+            --bg-color: #0d0c1d;
+            --surface-color: #1a1832;
             --primary-color: #9b59b6;
             --secondary-color: #8e44ad;
             --text-color: #ecf0f1;
@@ -19,6 +19,7 @@
             --challenge-color: #e67e22;
             --font-family: 'Noto Sans KR', sans-serif;
             --title-font: 'Cinzel Decorative', cursive;
+            --dungeon-font: 'MedievalSharp', cursive;
         }
 
         html, body {
@@ -41,13 +42,14 @@
             max-width: 1000px;
             max-height: 800px;
             position: relative;
-            background-color: #1e1c3a;
+            background-color: #000;
             border-radius: 15px;
-            box-shadow: 0 0 40px rgba(0,0,0,0.7), inset 0 0 15px rgba(0,0,0,0.5);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 25px rgba(142, 68, 173, 0.4);
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            border: 3px solid #000;
+            border: 4px solid #333;
+            border-image: linear-gradient(145deg, #444, #111) 1;
         }
 
         .screen {
@@ -62,22 +64,24 @@
             align-items: center;
             padding: 20px;
             box-sizing: border-box;
-            background: linear-gradient(135deg, #2c2a4a, #3e3b6b);
+            background: radial-gradient(ellipse at center, #2c2a4a 0%, #1a1832 100%);
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
+            transition: opacity 0.7s ease, visibility 0.7s ease;
             text-align: center;
             overflow-y: auto;
         }
         
-        .screen::after {
+        .screen::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%);
+            background: url('https://www.transparenttextures.com/patterns/crissxcross.png'), 
+                        radial-gradient(ellipse at center, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.8) 100%);
+            opacity: 0.1;
             pointer-events: none;
         }
 
@@ -88,76 +92,86 @@
         }
         
         #story-screen {
-            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            background: url('https://raw.githubusercontent.com/dessa1995/crime/main/dungeon-gate.png') no-repeat center center;
+            background-size: cover;
             cursor: pointer;
         }
         .story-content {
-            background: rgba(0,0,0,0.5);
-            padding: 20px 40px;
+            background: rgba(0,0,0,0.7);
+            padding: 25px 45px;
             border-radius: 15px;
             border: 2px solid var(--accent-color);
             max-width: 80%;
             text-align: center;
-            box-shadow: 0 0 20px var(--accent-color);
+            box-shadow: 0 0 25px rgba(241, 196, 15, 0.7);
+            backdrop-filter: blur(4px);
         }
         .story-content h2 {
-            font-family: var(--title-font);
+            font-family: var(--dungeon-font);
             color: var(--accent-color);
             margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px var(--accent-color);
         }
         .story-content h3 {
             margin-top: 20px;
             color: var(--text-color);
+            font-family: var(--dungeon-font);
+            font-size: 1.5em;
         }
         .story-content p {
             font-size: 1.1em;
-            line-height: 1.6;
+            line-height: 1.7;
             margin-bottom: 15px;
         }
         .skip-message {
             margin-top: 30px;
             font-style: italic;
-            font-size: 0.9em;
+            font-size: 1em;
             color: var(--accent-color);
             animation: pulse 2s infinite;
         }
-        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+        @keyframes pulse { 0% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05);} 100% { opacity: 0.7; transform: scale(1); } }
 
 
         #start-screen {
-            background: radial-gradient(ellipse at center, #4a477a 0%, #2c2a4a 70%),
-                        repeating-linear-gradient(-45deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px);
+            background: url('https://raw.githubusercontent.com/dessa1995/crime/main/dungeon-hall.png') no-repeat center center;
+            background-size: cover;
         }
         #start-screen .title-container {
             border: 4px double var(--accent-color);
-            padding: 20px 40px;
-            background: rgba(0,0,0,0.3);
+            padding: 25px 45px;
+            background: rgba(0,0,0,0.6);
             border-radius: 10px;
+            backdrop-filter: blur(5px);
         }
         #start-screen h1 {
-            font-family: var(--title-font);
-            font-size: 3em;
+            font-family: var(--dungeon-font);
+            font-size: 4em;
             color: var(--accent-color);
-            text-shadow: 0 0 5px var(--accent-color), 0 0 15px #000, 0 0 25px #000;
+            text-shadow: 0 0 8px var(--accent-color), 0 0 20px #e74c3c, 0 0 35px #000;
             animation: title-glow 4s infinite alternate;
             margin: 0;
         }
         #start-screen p {
-            font-size: 1.1em;
+            font-size: 1.2em;
             color: var(--text-color);
-            text-shadow: 1px 1px 2px #000;
+            text-shadow: 2px 2px 3px #000;
             margin-top: 10px;
         }
 
         @keyframes title-glow {
-            from { text-shadow: 0 0 5px var(--accent-color), 0 0 15px #000, 0 0 25px #000; }
-            to { text-shadow: 0 0 15px var(--accent-color), 0 0 35px #000, 0 0 50px #000; }
+            from { text-shadow: 0 0 8px var(--accent-color), 0 0 20px #e74c3c, 0 0 35px #000; }
+            to { text-shadow: 0 0 20px var(--accent-color), 0 0 40px #e74c3c, 0 0 60px #000; }
         }
 
         h2, h3 {
             color: var(--accent-color);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            font-family: var(--dungeon-font);
         }
+        h2 { font-size: 2.2em; }
+        h3 { font-size: 1.8em; }
 
         .button-group {
             display: flex;
@@ -177,20 +191,20 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 0 #6c3483, 0 6px 10px rgba(0,0,0,0.4);
+            box-shadow: 0 5px 0 #6c3483, 0 6px 10px rgba(0,0,0,0.4), inset 0 -2px 5px rgba(0,0,0,0.3);
             transform: translateY(0);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
         .btn:hover {
             background: linear-gradient(145deg, #b37cd0, #9b59b6);
             transform: translateY(-3px);
-            box-shadow: 0 8px 0 #6c3483, 0 9px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 0 #6c3483, 0 9px 12px rgba(0,0,0,0.3), inset 0 -2px 5px rgba(0,0,0,0.3);
         }
 
         .btn:active {
             transform: translateY(2px);
-            box-shadow: 0 3px 0 #6c3483, 0 4px 5px rgba(0,0,0,0.4);
+            box-shadow: 0 3px 0 #6c3483, 0 4px 5px rgba(0,0,0,0.4), inset 0 2px 5px rgba(0,0,0,0.3);
         }
         
         .btn.disabled {
@@ -207,20 +221,24 @@
         
         .btn-challenge {
            background: linear-gradient(145deg, #f39c12, #d35400);
-           box-shadow: 0 5px 0 #a04000;
+           box-shadow: 0 5px 0 #a04000, 0 6px 10px rgba(0,0,0,0.4), inset 0 -2px 5px rgba(0,0,0,0.3);
         }
         .btn-challenge:hover {
            background: linear-gradient(145deg, #f5b041, #e67e22);
-           box-shadow: 0 8px 0 #a04000;
+           box-shadow: 0 8px 0 #a04000, 0 9px 12px rgba(0,0,0,0.3), inset 0 -2px 5px rgba(0,0,0,0.3);
         }
         
         .btn-danger {
             background: linear-gradient(145deg, #e74c3c, #c0392b);
-            box-shadow: 0 5px 0 #922b21;
+            box-shadow: 0 5px 0 #922b21, 0 6px 10px rgba(0,0,0,0.4), inset 0 -2px 5px rgba(0,0,0,0.3);
         }
         .btn-danger:hover {
             background: linear-gradient(145deg, #ec7063, #e74c3c);
-            box-shadow: 0 8px 0 #922b21;
+            box-shadow: 0 8px 0 #922b21, 0 9px 12px rgba(0,0,0,0.3), inset 0 -2px 5px rgba(0,0,0,0.3);
+        }
+        .btn-success {
+            background: linear-gradient(145deg, #2ecc71, #27ae60);
+            box-shadow: 0 5px 0 #1e8449;
         }
 
         #character-selection-screen .char-options, #ingame-char-change-modal .char-options {
@@ -236,11 +254,24 @@
             border: 3px solid transparent;
             transition: all 0.3s ease;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .char-card::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            border-radius: 12px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         .char-card.selected {
-            border-color: var(--accent-color);
             transform: scale(1.05);
-            box-shadow: 0 0 15px var(--accent-color), inset 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: 0 0 20px var(--accent-color), inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .char-card.selected::before {
+            opacity: 1;
         }
         .char-card img {
             width: 100px;
@@ -265,11 +296,12 @@
         }
 
         #difficulty-selection-screen #difficulty-char-status {
-            background-color: rgba(0,0,0,0.2);
+            background-color: rgba(0,0,0,0.3);
             padding: 10px 20px;
             border-radius: 10px;
             border: 2px solid var(--primary-color);
             margin-bottom: 20px;
+            backdrop-filter: blur(3px);
         }
         #difficulty-selection-screen #difficulty-char-status h3 {
             margin: 0 0 5px 0;
@@ -295,11 +327,12 @@
             justify-content: flex-start;
             padding: 0;
             overflow: hidden;
+            background: #000; /* Canvas will draw over this */
         }
         #status-bar {
             width: 100%;
             padding: 10px 20px;
-            background-color: rgba(0,0,0,0.3);
+            background-color: rgba(0,0,0,0.5);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -309,6 +342,8 @@
             flex-wrap: wrap;
             gap: 10px;
             position: relative;
+            border-bottom: 2px solid var(--primary-color);
+            backdrop-filter: blur(5px);
         }
         #status-bar > div {
             display: flex;
@@ -343,16 +378,17 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            background-color: rgba(26, 24, 50, 0.95);
+            background-color: rgba(13, 12, 29, 0.95);
             padding: 15px;
             box-sizing: border-box;
-            border-top: 3px solid var(--primary-color);
+            border-top: 3px solid var(--accent-color);
             z-index: 10;
             display: none;
             flex-direction: column;
             gap: 10px;
             max-height: 60%;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 -5px 20px rgba(241, 196, 15, 0.4);
+            backdrop-filter: blur(5px);
         }
         #quiz-case {
             flex-shrink: 1;
@@ -360,7 +396,7 @@
             overflow-y: auto;
             overscroll-behavior: contain;
             padding: 15px;
-            background: rgba(0,0,0,0.2);
+            background: rgba(0,0,0,0.3);
             border-radius: 8px;
             font-size: 1.1em;
             line-height: 1.6;
@@ -368,6 +404,7 @@
             width: 100%;
             box-sizing: border-box;
             -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--primary-color);
         }
         #q1-options {
             flex-shrink: 0;
@@ -413,20 +450,21 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.6);
+            background-color: rgba(0,0,0,0.7);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 99;
             padding: 15px;
             box-sizing: border-box;
+            backdrop-filter: blur(5px);
         }
         .modal-content {
             background-color: var(--surface-color);
             padding: 30px;
             border-radius: 15px;
             border: 3px solid var(--accent-color);
-            box-shadow: 0 0 20px rgba(0,0,0,0.7);
+            box-shadow: 0 0 25px rgba(241, 196, 15, 0.5);
             text-align: center;
             max-width: 90%;
             max-height: 90%;
@@ -478,7 +516,7 @@
             position: absolute;
             top: 70px;
             right: 20px;
-            background-color: rgba(0,0,0,0.6);
+            background-color: rgba(0,0,0,0.7);
             padding: 10px 15px;
             border-radius: 8px;
             font-size: 1.1em;
@@ -486,6 +524,7 @@
             z-index: 10;
             display: none;
             border-left: 3px solid var(--danger-color);
+            backdrop-filter: blur(3px);
         }
         
         #temp-message-overlay {
@@ -494,15 +533,18 @@
             left: 50%;
             transform: translate(-50%, -50%);
             padding: 20px 40px;
-            background-color: rgba(0,0,0,0.75);
+            background-color: rgba(0,0,0,0.8);
             color: var(--accent-color);
-            font-size: 2em;
+            font-family: var(--dungeon-font);
+            font-size: 2.5em;
             font-weight: bold;
             border-radius: 10px;
             z-index: 110;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
+            text-shadow: 0 0 10px #000;
+            white-space: nowrap;
         }
         #temp-message-overlay.visible {
             opacity: 1;
@@ -518,7 +560,7 @@
 
         /* Responsive Design */
         @media (max-width: 600px) {
-            #start-screen h1 { font-size: 2.2em; }
+            #start-screen h1 { font-size: 2.8em; }
             .btn { padding: 10px 20px; font-size: 1em; }
             #character-selection-screen .char-options, #ingame-char-change-modal .char-options { flex-direction: column; align-items: center; }
             .char-card img { width: 80px; height: 80px; }
@@ -528,7 +570,7 @@
             #quiz-case { font-size: 0.95em; padding: 10px; }
             .quiz-btn { width: 90%; }
             .q2-btn { font-size: 0.85em; }
-            #temp-message-overlay { font-size: 1.5em; }
+            #temp-message-overlay { font-size: 1.8em; }
             .story-content p { font-size: 1em; }
         }
 
@@ -689,9 +731,9 @@
                 <p>원하는 직업과 성별을 선택하세요.</p>
                 <div class="char-options">
                      <div class="char-card" data-class="전사" data-gender="남">
-                        <img src="https://raw.githubusercontent.com/dessa1995/crime/main/mw.png" alt="남자 전사" onerror="this.src='https://placehold.co/100x100/4f4c7a/ecf0f1?text=Warrior'">
-                        <p>남자 전사</p>
-                    </div>
+                         <img src="https://raw.githubusercontent.com/dessa1995/crime/main/mw.png" alt="남자 전사" onerror="this.src='https://placehold.co/100x100/4f4c7a/ecf0f1?text=Warrior'">
+                         <p>남자 전사</p>
+                     </div>
                     <div class="char-card" data-class="전사" data-gender="여">
                         <img src="https://raw.githubusercontent.com/dessa1995/crime/main/fw.png" alt="여자 전사" onerror="this.src='https://placehold.co/100x100/4f4c7a/ecf0f1?text=Warrior'">
                         <p>여자 전사</p>
@@ -764,10 +806,12 @@
         let effectParticles = [];
         let gameOverDebris = [];
         let lavaParticles = [];
+        let skullParticles = [];
         let isInputLocked = false;
 
         // 퀴즈 데이터
         const quizzes = [
+            // 기존 '하' 난이도 퀴즈
             { id: 101, type: 'one-step-ox', difficulty: '하', case: "형법은 범죄와 그에 대한 법적 효과로서 형벌과 보안 처분을 규정한 모든 법 규범을 의미한다.", q1: 'O', explanation: "형법은 넓은 의미에서 범죄와 그에 대한 법적 효과로서 형벌과 보안 처분을 규정한 모든 법 규범의 총체를 의미한다." },
             { id: 102, type: 'one-step-ox', difficulty: '하', case: "실질적 의미의 형법은 ‘형법’이라는 명칭이 붙여진 법률만을 의미한다.", q1: 'X', explanation: "단순히 '형법'이라는 이름의 법률을 지칭하는 것은 형식적 의미의 형법이다." },
             { id: 103, type: 'one-step-ox', difficulty: '하', case: "형법의 보장적 기능은 국가 형벌권의 자의적 행사로부터 국민의 자유와 권리를 보장한다.", q1: 'O', explanation: "형법은 형법에 규정되지 아니한 행위는 범죄가 되지 않고 처벌받지 않도록 보장하며, 규정된 형벌의 종류와 양을 넘어서서 처벌받지 않도록 함으로써 국가 형벌권으로부터 국민의 자유와 권리를 보장하는 보장적 기능을 수행한다." },
@@ -788,6 +832,16 @@
             { id: 118, type: 'one-step-ox', difficulty: '하', case: "보호 관찰은 교정 시설에 수용하지 않고 사회생활을 허용하면서 보호 관찰관의 지도·감독을 받는 보안 처분이다.", q1: 'O', explanation: "보호 관찰은 형의 집행 유예나 선고 유예를 받거나 가석방되는 경우 등을 대상으로 교정 시설에 수용하지 않고 사회생활을 허용하면서 보호 관찰관의 지도·감독을 통해 사회 복귀를 촉진하는 제도이다." },
             { id: 119, type: 'one-step-ox', difficulty: '하', case: "형사 절차에서 피의자와 피고인은 자신에게 불리한 진술을 거부할 수 있는 진술 거부권을 가진다.", q1: 'O', explanation: "모든 형사 절차에서 피의자와 피고인은 자신에게 불리한 진술을 거부할 수 있는 진술 거부권을 가진다." },
             { id: 120, type: 'one-step-ox', difficulty: '하', case: "재심 제도는 하급법원의 재판 결과에 불복하여 재판 당사자가 상급 법원에 다시 재판할 것을 청구하는 제도이다.", q1: 'X', explanation: "재심 제도는 유죄의 확정 판결에 중대한 사실 오인이 있는 경우 그 오류를 시정하여 무고한 자의 이익을 구제하여 주는 제도이다." },
+            { id: 121, type: 'one-step-ox', difficulty: '하', case: "검사가 공소를 제기하지 않는 처분을 불기소 처분이라고 한다.", q1: 'O', explanation: "수사 결과 피의자의 범죄 혐의가 인정되어도 검사가 공소를 제기하지 않는 처분을 불기소 처분이라고 한다." },
+            { id: 122, type: 'one-step-ox', difficulty: '하', case: "피고인이 유죄 판결을 받을 때까지는 무죄로 추정된다는 원칙은 모든 형사 절차에 적용되는 인권 보장 원칙이다.", q1: 'O', explanation: "무죄 추정의 원칙은 모든 형사 절차에서 피고인이 유죄 판결이 확정될 때까지 무죄로 추정되는 인권 보장 원칙이다." },
+            // 신규 '하' 난이도 퀴즈
+            { id: 123, type: 'one-step-ox', difficulty: '하', case: "심신상실자의 행위는 책임 조각 사유에 해당한다.", q1: 'O', explanation: "책임 능력이 없다고 보기 때문에 범죄가 성립하지 않음." },
+            { id: 124, type: 'one-step-ox', difficulty: '하', case: "형사 미성년자는 만 13세 이하를 의미한다.", q1: 'X', explanation: "우리나라는 14세 미만을 형사 미성년자로 본다." },
+            { id: 125, type: 'one-step-ox', difficulty: '하', case: "피해자의 명시적 동의가 있으면 어떤 범죄든 처벌받지 않는다.", q1: 'X', explanation: "동의가 있다고 해도 법률상 허용되지 않는 경우 처벌됨." },
+            { id: 126, type: 'one-step-ox', difficulty: '하', case: "심신미약자는 항상 책임이 조각된다.", q1: 'X', explanation: "일부 책임은 인정되며, 형이 감경될 수 있다." },
+            { id: 127, type: 'one-step-ox', difficulty: '하', case: "정당방위는 반드시 자기 자신을 보호할 때만 인정된다.", q1: 'X', explanation: "타인의 법익을 방어하는 경우도 포함된다." },
+            
+            // 기존 '중' 난이도 퀴즈
             { id: 201, type: 'single', difficulty: '중', case: "다음 중 형법의 보충성 원칙을 가장 잘 설명하는 것은?", q2: ["형법은 사회 윤리적 행위 가치를 보호하는 기능을 한다.", "형법은 국가 형벌권 남용으로부터 국민의 자유와 권리를 보장한다.", "법익을 보호하기 위해 다른 수단이 있다면 그것을 먼저 행사하고 형법은 가장 마지막 수단으로 발동되어야 한다.", "형법은 범죄 행위로 인해 얻는 이익과 형벌이라는 불이익을 통해 국민이 자신의 행위를 결정하게 하는 역할을 한다."], answerIndex: 2, explanation: "형법의 보충성 또는 최후 수단성은 형벌이 국가의 가장 강력한 물리력 행사로서, 그러한 법익을 보호하기 위한 다른 수단이 있다면 그것을 먼저 행사하고 형법은 가장 마지막 수단으로 발동되어야 함을 의미한다." },
             { id: 202, type: 'single', difficulty: '중', case: "다음 중 죄형 법정주의의 파생 원칙인 소급효 금지의 원칙에 대한 설명으로 옳지 않은 것은?", q2: ["범죄와 형벌은 행위 당시 법률에 규정되어 있어야 한다.", "행위 이후에 제정된 법률로는 소급하여 처벌할 수 없다.", "행위자에게 불리한 경우에도 소급효가 허용된다.", "재판 시의 법이 행위 시의 법보다 경할 때에는 재판 시의 법을 적용한다."], answerIndex: 2, explanation: "소급효 금지의 원칙은 행위자에게 불리한 소급효를 금지하는 것이 원칙이다. 다만, 행위자에게 유리한 소급효는 예외적으로 허용된다. 따라서 행위자에게 불리한 경우에도 소급효가 허용된다는 설명은 옳지 않다." },
             { id: 203, type: 'single', difficulty: '중', case: "다음 중 유추 해석 금지의 원칙에 위배되는 사례는?", q2: ["법에 규정된 '상해'에 '정신적 고통'을 포함하여 해석하더라도 행위자에게 불리하지 않은 경우", "형법에 명시된 '절도'에 '컴퓨터를 이용한 정보 탈취'를 포함하는 새로운 범죄 유형을 법률로 명확히 규정한 경우", "명확하지 않은 조항을 입법 취지에 맞게 합리적으로 해석하여 적용한 경우", "범죄 행위가 유사하지만 형법에 명확히 규정되어 있지 않은 때에 유사한 규정을 적용하여 행위자에게 불리하게 형을 가중한 경우"], answerIndex: 3, explanation: "유추 해석 금지의 원칙은 법률에 규정이 없는 사항에 대해 유사한 성질의 법률을 적용하여 행위자에게 불리한 새로운 구성 요건을 만들거나 형을 가중할 수 없다는 원칙이다. ①과 ③은 허용될 수 있는 법 해석이며, ②는 새로운 법률 제정의 문제이다." },
@@ -803,9 +857,25 @@
             { id: 213, type: 'single', difficulty: '중', case: "형사 절차상 인권 보장을 위한 원칙 중 '유죄 판결이 확정될 때까지 무죄로 추정한다'는 원칙은?", q2: ["적법 절차의 원칙", "진술 거부권", "변호인의 조력을 받을 권리", "무죄 추정의 원칙"], answerIndex: 3, explanation: "유죄 판결이 확정될 때까지 피의자나 피고인을 무죄로 추정하는 원칙은 무죄 추정의 원칙이다." },
             { id: 214, type: 'single', difficulty: '중', case: "위법 수집 증거 배제 법칙의 내용으로 옳은 것은?", q2: ["고문, 폭행 등으로 임의로 진술한 것이 아니라고 의심되는 자백은 증거 능력이 없다.", "자백이 불이익한 유일한 증거인 때에는 유죄의 증거로 할 수 없다.", "위법한 절차에 의하여 수집된 증거는 증거 능력이 없다.", "경험한 사실을 경험자가 직접 구두로 법원에 보고하지 않은 간접 증거는 원칙적으로 증거 능력이 없다."], answerIndex: 2, explanation: "위법 수집 증거 배제 법칙은 위법한 절차에 의해 수집된 증거는 증거 능력이 없다는 원칙이다. ①은 자백 배제 법칙, ②는 자백 보강 법칙, ④는 전문 법칙에 해당한다." },
             { id: 215, type: 'single', difficulty: '중', case: "범죄 피해자가 가해자에게 신속하고 간편하게 손해 배상을 받을 수 있도록 하는 제도는?", q2: ["범죄 피해자 구조 제도", "배상 명령 제도", "형사 보상 제도", "명예 회복 제도"], answerIndex: 1, explanation: "배상 명령 제도는 범죄 피해자가 가해자에게 신속하고 간편하게 손해 배상을 받을 수 있도록 하는 제도이다." },
+            { id: 216, type: 'single', difficulty: '중', case: "다음 중 형벌에 대한 설명으로 옳지 않은 것은?", q2: ["사형은 생명을 빼앗는 생명형에 해당한다.", "징역은 교정 시설에 수용하여 노역에 복무하게 하는 자유형이다.", "벌금은 재산을 빼앗는 재산형에 해당하며, 원칙적으로 5만 원 이상이다.", "자격 정지는 공무원이 되는 자격이나 선거권 등을 영구적으로 박탈하는 명예형이다."], answerIndex: 3, explanation: "자격 정지는 일정 기간 자격을 정지하는 것이며, 영구적으로 박탈하는 것은 자격 상실입니다." },
+            { id: 217, type: 'single', difficulty: '중', case: "소년 보호 사건의 처리 절차에 대한 설명으로 옳지 않은 것은?", q2: ["19세 미만의 소년에게는 성인 범죄자와 다른 재판 절차와 형 집행 절차를 거칠 수 있다.", "사건의 경중에 따라 보호 관찰, 소년원 송치 등의 보호 처분을 받을 수 있다.", "가정법원소년부에서 재판을 통해 소년범에게 직접 형벌을 부과할 수 없다.", "소년범은 소년 교도소에 수용될 수 있으나, 소년원에는 수용될 수 없다."], answerIndex: 3, explanation: "소년범은 범죄의 경중에 따라 소년 교도소에 수용될 수도 있고, 가정 법원 소년부에서 소년 보호 처분을 받은 경우 소년원에 수용될 수도 있다. ①, ②, ③은 소년 보호 사건 처리 절차의 특칙에 대한 설명으로 옳다." },
+            { id: 218, type: 'single', difficulty: '중', case: "형벌의 종류 중, 교정 시설에 수용하되 노역을 부과하지 않는 형벌은?", q2: ["징역", "금고", "구류", "벌금"], answerIndex: 1, explanation: "금고는 1개월 이상 교정 시설에 수용하여 집행하지만 노역을 부과하지 않는다. 구류도 노역을 부과하지 않으나 기간이 1일 이상 30일 미만으로 제한된다. 징역은 교정 시설에 수용하여 정해진 노역에 복무하게 한다." },
+            // 신규 '중' 난이도 퀴즈
+            { id: 219, type: 'single', difficulty: '중', case: "갑은 귀가 도중 모르는 사람이 흉기를 들고 위협하자, 반사적으로 상대방의 손을 가격해 상해를 입혔다. 이 경우 갑의 행위는 위법성이 조각되는지 판단해야 한다. 이 사례에 적용될 수 있는 법적 개념은?", q2: ["자구행위", "정당방위", "긴급피난", "피해자의 승낙"], answerIndex: 1, explanation: "현재의 부당한 침해에 대하여 자기 또는 타인의 법익을 보호하기 위한 상당한 방어행위는 정당방위로서 위법성이 조각된다." },
+            { id: 220, type: 'single', difficulty: '중', case: "을은 심한 정신질환으로 인해 현실 판단 능력을 상실한 상태에서 행인을 폭행하였다. 이 경우 법적으로 가장 적절한 판단은?", q2: ["범죄가 성립하며, 형이 감경된다.", "범죄가 성립하며, 위법성이 조각된다.", "범죄가 성립하지 않는다.", "책임이 인정되며, 벌금형이 가능하다."], answerIndex: 2, explanation: "심신상실자의 경우 책임 능력이 인정되지 않으므로 구성요건 해당성과 위법성이 있어도 범죄는 성립하지 않는다." },
+            { id: 221, type: 'single', difficulty: '중', case: "병은 절도 현장을 목격한 후 도주 중인 범인을 쫓다가 실수로 제3자에게 경미한 상해를 입혔다. 병의 행위에 대한 법적 평가로 가장 적절한 것은?", q2: ["고의 없는 과실범으로 처벌된다.", "자구행위로 위법성이 조각될 수 있다.", "정당방위에 해당한다.", "구성요건 해당성이 없어 처벌 대상이 아니다."], answerIndex: 1, explanation: "자구행위는 청구권의 보전을 위한 불가피한 행위로 인정되며, 일정 요건을 갖춘 경우 위법성이 조각될 수 있다." },
+            { id: 222, type: 'single', difficulty: '중', case: "정은 생명을 위협하는 급박한 화재 현장에서 대피하던 중, 다른 사람의 창고 문을 부수고 진입하여 피난하였다. 이 경우 정에게 가장 적절한 법적 평가 기준은?", q2: ["긴급피난", "정당방위", "피해자의 승낙", "심신미약"], answerIndex: 0, explanation: "생명이나 신체에 대한 현재의 위난을 피하기 위한 상당한 행위는 긴급피난에 해당하여 위법성이 조각될 수 있다." },
+            { id: 223, type: 'single', difficulty: '중', case: "만 13세인 미성년자 무는 분노를 참지 못하고 친구의 휴대전화를 고의로 파손하였다. 이 경우 무의 법적 책임은?", q2: ["구성요건해당성이 없으므로 범죄가 아니다.", "형사 미성년자이므로 범죄가 성립하지 않는다.", "과실행위이므로 경범죄 처벌이 가능하다.", "위법성이 조각되어 처벌되지 않는다."], answerIndex: 1, explanation: "형법상 만 14세 미만은 형사 미성년자로 규정되며, 책임 능력이 없어 범죄 성립이 부정된다." },
+            { id: 224, type: 'single', difficulty: '중', case: "심한 불안장애를 앓고 있는 기는 타인의 위협에 대해 지나치게 과잉 반응하며 폭력을 행사하였다. 조사 결과 기는 사물 변별 능력은 있으나 충동 조절이 어려운 상태였다. 이 경우 기에게 적용될 수 있는 법적 개념은?", q2: ["심신상실", "심신미약", "피해자의 승낙", "고의 없음"], answerIndex: 1, explanation: "사물을 변별할 수는 있으나 의사결정 능력이나 행동 통제력이 떨어지는 경우 심신미약으로 간주하며, 형이 감경될 수 있다." },
+            { id: 225, type: 'single', difficulty: '중', case: "A는 폭행을 가한 상대방에게 보복 차원에서 며칠 뒤 찾아가 다시 폭력을 행사하였다. 이 행위에 대한 법적 판단으로 옳은 것은?", q2: ["정당방위에 해당하므로 위법성이 조각된다.", "현재의 위난이 존재하므로 긴급피난이다.", "자구행위에 해당한다.", "위법성이 조각되지 않는다."], answerIndex: 3, explanation: "정당방위, 긴급피난, 자구행위 모두 ‘현재성’이 요건이므로, 사후의 보복 행위는 위법성이 조각되지 않는다." },
+            { id: 226, type: 'single', difficulty: '중', case: "A는 타인의 소중한 물건을 고의로 훼손했으나, 피해자가 \"괜찮다\"고 명시적으로 동의한 사실이 확인되었다. 다만 훼손된 물건은 공공 미술재산이었다. A의 행위에 대해 적용될 수 있는 판단은?", q2: ["피해자의 승낙에 의해 위법성이 조각된다.", "피해자의 승낙은 공공재산에 대해 유효하므로 책임이 없다.", "공공의 법익에 대한 동의는 효력이 없으므로 위법하다.", "정당방위로 볼 수 있다."], answerIndex: 2, explanation: "피해자의 승낙은 자기 법익에만 미치며, 공공의 법익에 관한 동의는 원칙적으로 위법성을 조각하지 못한다." },
+            { id: 227, type: 'single', difficulty: '중', case: "A는 자신이 구입한 중고차가 고장이 많자 판매자에게 강하게 항의했고, 급기야 판매자의 차량을 발로 찼다. 이후 A는 자신이 차량 하자에 따른 청구권을 가지고 있다고 주장하였다. 법적 평가로 가장 타당한 것은?", q2: ["청구권이 있다면 어떤 방법으로든 실현 가능하다.", "자구행위 요건을 충족하므로 위법하지 않다.", "법적 절차가 가능한 경우 자구행위는 허용되지 않는다.", "형사 미성년자이면 범죄가 되지 않는다."], answerIndex: 2, explanation: "자구행위는 법적 구제가 불가능하거나 매우 곤란한 경우에 한하여 정당화된다." },
+            { id: 228, type: 'single', difficulty: '중', case: "B는 만취 상태에서 행인과 시비가 붙어 폭행을 가하였다. 당시 그는 술에 취해 있었으나 상황 판단은 가능하였다. 이 경우 법적으로 타당한 평가는?", q2: ["심신상실 상태이므로 범죄가 성립하지 않는다.", "심신미약으로 인정되어 형이 감경될 수 있다.", "고의성이 없으므로 처벌되지 않는다.", "긴급피난 상태이므로 위법하지 않다."], answerIndex: 1, explanation: "음주로 인한 판단 능력 저하는 심신미약으로 평가될 수 있으며, 형의 감경 사유에 해당한다." },
+
+            // 기존 '상' 난이도 퀴즈
             { id: 301, type: 'two-step', difficulty: '상', case: "형법의 규범적 기능은 국민에게 행위의 준칙으로 삼도록 하고, 법관에게는 범죄 성립 여부를 판단하는 평가 규범으로서의 역할을 한다.", q1: 'O', q2_question: "다음은 어떤 사람이 법정에서 '범죄인 줄 몰랐다'고 주장했으나 처벌받은 사례입니다. 이 사례를 통해 알 수 있는 형법의 기능으로 가장 적절한 것은?", q2: ["보호적 기능", "보장적 기능", "규범적 기능", "보충적 기능"], answerIndex: 2, explanation: "국민이 준수해야 할 행위 준칙을 제시하고, 법관에게는 판단 기준을 제공하는 규범적 기능에 해당한다." },
             { id: 302, type: 'two-step', difficulty: '상', case: "형법 제243조는 '음란한 문서, 도화, 필름, 그 밖의 물건을 공공연하게 전시한 자'를 처벌하도록 규정하고 있으나, '음란'의 개념이 명확히 정의되어 있지 않다. 이에 따라 A가 성인용 만화를 출판한 사건에서, 법원은 해당 만화가 예술성과 표현의 자유를 고려할 때 명백한 음란물로 단정하기 어렵고, '음란'이라는 용어 자체가 불명확하다는 이유로 무죄를 선고하였다. 법원의 판단은 죄형법정주의 원칙에 어긋나는가?", q1: 'X', q2_question: "이 사례에서 법원의 판단 근거가 된 죄형 법정주의의 원칙은 무엇입니까?", q2: ["관습 형법 금지의 원칙", "소급효 금지의 원칙", "명확성의 원칙", "유추 해석 금지의 원칙"], answerIndex: 2, explanation: "'음란'이라는 용어가 모호하여 법 적용이 어려웠던 사례로, 죄형 법정주의의 명확성 원칙을 보여준다." },
-            { id: 303, type: 'two-step', difficulty: '상', case: "범죄가 성립하려면 고의가 요구되며, 과실에 의한 행위는 특별한 규정이 있는 경우에만 처벌된다. 따라서 과실에 의한 행위는 어떤 경우에도 형법상 범죄가 성립하지 않는다.", q1: 'X', q2_question: "다음 중 과실범 처벌 규정이 없을 경우 범죄로 성립하지 않는 사례는?", q2: ["타인의 물건을 훔치려 했으나 자기 물건인 줄 알고 가져온 경우", "실수로 타인의 물건을 파손했으나 과실범 처벌 규정이 없는 경우", "법률상 금지된 행위임을 알면서 저지른 경우", "금전적 이득을 목적으로 타인을 속여 재산을 편취한 경우"], answerIndex: 1, explanation: "과실에 의한 행위라도 법에 명시된 처벌 규정이 있어야만 범죄로 성립한다." },
+            { id: 303, type: 'two-step', difficulty: '상', case: "범죄가 성립하려면 고의가 요구되며, 과실에 의한 행위는 특별한 규정이 있는 경우에만 처벌된다. 따라서 과실에 의한 행위는 어떤 경우에도 형법상 범죄가 성립하지 않는다.", q1: 'X', q2_question: "다음 중 과실범 처벌 규정이 없어 범죄로 성립하지 않는 사례는?", q2: ["자기의 물건과 비슷한 타인의 물건을 고의로 훔치려 한 경우", "실수로 타인의 물건을 파손했으나 과실범 처벌 규정이 없는 경우", "법률상 금지된 행위임을 알면서 저지른 경우", "금전적 이득을 목적으로 타인을 속여 재산을 편취한 경우"], answerIndex: 1, explanation: "과실에 의한 행위라도 법에 명시된 처벌 규정이 있어야만 범죄로 성립한다." },
             { id: 304, type: 'two-step', difficulty: '상', case: "피해자의 승낙이 있다고 하여 모든 경우에 위법성이 조각되는 것은 아니다. 따라서 피해자의 승낙이 있는 경우 위법성은 항상 조각된다.", q1: 'X', q2_question: "다음 중 피해자의 승낙에도 불구하고 위법성이 조각되지 않아 범죄가 성립하는 사례는?", q2: ["의사의 수술로 상해를 입힌 경우", "채무자가 동의했지만 신체 일부를 취득한 경우", "조난자를 위해 타인의 집에 침입한 경우", "15세 미성년자의 성적 자기결정권 동의가 있는 경우"], answerIndex: 1, explanation: "사회 통념상 용인될 수 없는 경우(예: 신체 일부를 강제로 취득)는 승낙이 있어도 위법성이 조각되지 않는다." },
             { id: 305, type: 'two-step', difficulty: '상', case: "형벌의 종류 중 재산형에는 벌금, 과료, 몰수가 포함된다.", q1: 'O', q2_question: "다음 중 재산형에 해당하지 않는 형벌은?", q2: ["벌금 5,000만 원", "과료 30,000원", "몰수", "자격 정지 1년"], answerIndex: 3, explanation: "자격 정지는 인격이나 자격을 제한하는 명예형이다." },
             { id: 306, type: 'two-step', difficulty: '상', case: "소년 보호 처분에는 보호 관찰, 소년원 송치 등이 포함되며, 이는 형벌이 아닌 보호 처분의 일종이다.", q1: 'O', q2_question: "다음 중 「소년법」상 소년에게 사형 또는 무기형이 선고될 경우 적용되는 특칙은?", q2: ["사형 또는 무기형이 그대로 집행된다.", "사형 또는 무기형 대신 15년의 유기 징역으로 한다.", "23세가 될 때까지 소년 교도소에 수용된다.", "소년 보호 처분으로 소년원에 송치된다."], answerIndex: 1, explanation: "형법상 만 18세 미만인 소년에게는 사형·무기형을 선고할 수 없으며, 유기징역 15년으로 대체된다." },
@@ -819,24 +889,35 @@
             { id: 314, type: 'two-step', difficulty: '상', case: "채무자 갑은 도망 중이었다. 채권자 을은 우연히 길에서 갑을 마주쳐 도망을 막기 위해 그의 가방을 붙잡았고, 이로 인해 가방이 파손되었다. 이 경우 을의 행위는 위법성이 조각된다.", q1: 'O', q2_question: "위 사례에서 을의 행위에 해당하는 위법성 조각 사유는 무엇인가?", q2: ["정당방위", "긴급 피난", "자구 행위", "정당 행위"], answerIndex: 2, explanation: "국가의 구제를 기대하기 어려운 상황에서 청구권 실현을 위한 불가피한 자구 행위다." },
             { id: 315, type: 'two-step', difficulty: '상', case: "경찰청은 불량 식재료를 유통한 식품 업체에 대한 정보를 수사 후 국민 건강 보호 차원에서 언론에 공표하였다. 이로 인해 업체의 명예는 실추되었다. 이 경우 경찰청의 행위는 위법성이 인정된다.", q1: 'X', q2_question: "위 사례에서 경찰청의 행위에 해당하는 위법성 조각 사유는 무엇인가?", q2: ["정당방위", "긴급 피난", "자구 행위", "정당 행위"], answerIndex: 3, explanation: "공익 목적과 진실성, 필요성이 인정되므로 정당 행위로서 위법성이 조각된다." },
             { id: 316, type: 'two-step', difficulty: '상', case: "야간 근무 중인 경비원 갑은 침입자를 제지하던 중 반격을 받고, 시설 보호를 위해 물리력을 사용해 제압하였다. 침입자는 경미한 상처를 입었다. 이 경우 갑의 행위는 형법상 범죄로 성립한다.", q1: 'X', q2_question: "위 사례에서 갑의 행위에 해당하는 위법성 조각 사유는 무엇인가?", q2: ["긴급 피난", "정당방위", "자구 행위", "정당 행위"], answerIndex: 1, explanation: "현재의 부당한 침해에 대응한 자기방어로서 정당방위에 해당한다." },
+            // 신규 '상' 난이도 퀴즈
+            { id: 317, type: 'two-step', difficulty: '상', case: "정당방위는 현재의 부당한 침해가 존재해야만 성립한다.", q1: 'O', q2_question: "다음 중 정당방위가 성립하지 않는 경우는?", q2: ["강도가 칼을 들고 위협하자 밀쳐서 도망친 경우", "만취자가 욕설을 하자 폭행으로 대응한 경우", "낯선 이가 위협적으로 접근하자 제압한 경우", "가족을 해치려는 폭행범을 제압한 경우"], answerIndex: 1, explanation: "언어적 공격에 대해 신체적 폭행으로 대응하는 것은 상당성 요건을 충족하지 못한다." },
+            { id: 318, type: 'two-step', difficulty: '상', case: "자구행위는 청구권 보전을 위한 불가피한 수단이 없는 경우에만 허용된다.", q1: 'O', q2_question: "다음 중 자구행위로서 위법성이 조각될 수 있는 사례는?", q2: ["친구가 빌린 돈을 갚지 않아 차량에 낙서를 한 경우", "도망가는 도둑을 붙잡기 위해 방 문을 강제로 잠그고 경찰을 기다린 경우", "과거에 폭행한 상대에게 복수한 경우", "물건값을 받기 위해 상대방에게 손찌검한 경우"], answerIndex: 1, explanation: "현재의 권리 침해 상황에서 불가피하게 청구권을 보전하기 위한 조치로서 인정 가능하다." },
+            { id: 319, type: 'two-step', difficulty: '상', case: "긴급피난은 침해자의 존재 여부와 관계없이 자연재해나 동물 등으로부터의 위난에도 적용될 수 있다.", q1: 'O', q2_question: "다음 중 긴급피난이 적용될 수 있는 사례는?", q2: ["술에 취해 다른 사람을 폭행한 경우", "추격 중인 절도를 붙잡기 위해 위험 운전을 한 경우", "갑작스러운 산불에서 탈출하기 위해 담을 넘은 경우", "괴한에게 위협당해 상대를 제압한 경우"], answerIndex: 2, explanation: "자연재해로부터 피난을 위한 행위는 긴급피난으로 위법성이 조각될 수 있다." },
+            { id: 320, type: 'two-step', difficulty: '상', case: "피해자의 명시적 승낙이 있더라도 공공의 법익이 관련된 경우 위법성이 조각되지 않는다.", q1: 'O', q2_question: "다음 중 피해자의 승낙이 위법성 조각 사유로 성립하지 않는 것은?", q2: ["의사가 환자의 동의를 얻어 수술을 진행", "사진작가가 모델의 동의 하에 모델의 사진을 미술 전시에 출품", "친구가 허락한 공공시설 파손", "피고인이 피해자의 요청에 의해 의료적 문신 시술"], answerIndex: 2, explanation: "공공시설은 개인이 처분할 수 없는 법익이므로 승낙은 효력이 없다." },
+            { id: 321, type: 'two-step', difficulty: '상', case: "만 14세 미만은 형사 미성년자로서 범죄가 성립하지 않는다.", q1: 'O', q2_question: "다음 중 형사 미성년자에게 해당하는 사례는?", q2: ["만 13세가 절도를 저지른 경우", "만 15세가 폭행을 한 경우", "만 18세가 음주운전을 한 경우", "만 20세가 절도를 저지른 경우"], answerIndex: 0, explanation: "형사 미성년자는 만 14세 미만이며, 형사책임을 지지 않는다." },
+            { id: 322, type: 'two-step', difficulty: '상', case: "심신상실자는 형법상 범죄가 성립되지 않는다.", q1: 'O', q2_question: "다음 중 심신상실로 인정되어 범죄가 성립하지 않을 수 있는 경우는?", q2: ["약한 우울증 상태에서 고의로 범죄를 저지른 경우", "자발적인 만취 상태에서 고의로 폭행한 경우", "정신병으로 현실 판단능력을 완전히 상실한 경우", "분노를 주체하지 못하여 실수로 범행한 경우"], answerIndex: 2, explanation: "현실 판단능력 상실이 인정되면 심신상실 상태로 책임능력이 부정된다." },
+            { id: 323, type: 'two-step', difficulty: '상', case: "심신미약자는 범죄가 성립하지만, 형이 감경될 수 있다.", q1: 'O', q2_question: "다음 중 심신미약으로 형이 감경될 가능성이 가장 높은 경우는?", q2: ["우발적 폭행", "경미한 도박", "정신질환 치료 중 범행", "단순 절도"], answerIndex: 2, explanation: "정신질환 치료 중 범행은 심신미약 상태일 가능성이 있으며 감경 사유로 고려된다." },
+            { id: 324, type: 'two-step', difficulty: '상', case: "자구행위는 행위 당시 법적 구제 방법이 있었더라도 정당화될 수 있다.", q1: 'X', q2_question: "다음 중 자구행위로서 인정되기 어려운 사례는?", q2: ["형사절차 없이 금품을 직접 탈취한 경우", "절도범을 붙잡기 위해 문을 잠근 경우", "부정행위를 방지하기 위해 시험지를 압수한 경우", "침입자를 퇴거시키기 위해 밀어낸 경우"], answerIndex: 0, explanation: "법적 절차를 무시한 직접적인 금품 강탈은 자구행위로 정당화될 수 없다." },
+            { id: 325, type: 'two-step', difficulty: '상', case: "정당방위는 제3자의 법익을 보호하기 위한 경우에도 적용된다.", q1: 'O', q2_question: "다음 중 타인을 위한 정당방위로 위법성이 조각될 수 있는 사례는?", q2: ["친구의 복수를 위해 상대를 폭행한 경우", "지나가던 사람이 폭행당하는 타인을 구한 경우", "가족이 절도범을 도운 경우", "도발에 응해 먼저 폭행한 경우"], answerIndex: 1, explanation: "타인의 현재의 부당한 침해를 방지하기 위한 상당한 방어행위는 정당방위가 성립된다." },
+            { id: 326, type: 'two-step', difficulty: '상', case: "긴급피난은 법익의 침해가 있더라도 보호하려는 법익이 더 클 경우 허용된다.", q1: 'O', q2_question: "다음 중 긴급피난으로 인정되기 어려운 경우는?", q2: ["홍수 중 피난을 위해 상점 유리창을 깬 경우", "추락 위기에서 타인의 차를 타고 피신한 경우", "불만을 이유로 공공시설을 파괴한 경우", "폭설 속에서 버스에 무단 탑승한 경우"], answerIndex: 2, explanation: "단순 불만에 따른 행위는 위난 회피를 위한 행위로 보기 어려우며 긴급피난에 해당하지 않는다." },
+
+            // 기존 '최상' 난이도 퀴즈
             { id: 401, type: 'two-step', difficulty: '최상', case: "오늘날 강조되는 실질적 죄형 법정주의는 입법자가 부당한 법률을 제정하는 것까지도 제한하여 국민의 자유와 권리를 보호하고자 한다.", q1: 'O', q2_question: "다음은 조선시대 형벌에 대한 설명입니다. 이를 통해 알 수 있는 현대적 죄형 법정주의 원칙의 중요성은 무엇입니까? <br>\"조선시대에는 성문법 외에 정령이나 사회 통념에 따라 형벌이 부과되기도 했다.\"", q2: ["예측 가능하고 명확한 법률의 중요성", "형벌과 범죄의 비례성 원칙의 중요성", "행위 당시의 법률을 적용하는 행위시법주의의 중요성", "국가 형벌권 남용을 막기 위한 적법 절차의 원칙의 중요성"], answerIndex: 0, explanation: "조선시대의 사례는 성문법 외의 기준으로 형벌이 부과될 수 있었음을 보여준다. 이는 국민이 어떤 행위가 처벌 대상이 되는지 예측할 수 있도록 법률이 명확해야 한다는 현대의 명확성의 원칙과 관습 형법 금지의 원칙의 중요성을 부각시킨다." },
             { id: 402, type: 'two-step', difficulty: '최상', case: "보안처분도 형사 제재이므로 형벌과 같이 부과 요건 등에 있어서 적법절차의 원리가 준수되어야 한다.", q1: 'O', q2_question: "다음 중 형벌과 보안처분에 대한 설명으로 옳은 것을 고르시오.", q2: ["징역형은 재산형에 해당한다.", "벌금형은 일정 기간 신체의 자유를 박탈하는 형벌이다.", "보안 처분은 범죄자의 사회적 위험성을 전제로 특별 예방의 관점에서 부과된다.", "사형은 무기 징역형보다 범죄자에 대한 법익 침해의 정도가 작다."], answerIndex: 2, explanation: "보안 처분은 행위자의 사회적 위험성과 재범의 우려를 전제로 특별 예방의 관점에서 부과된다. ① 징역형은 자유형, ② 벌금형은 재산형, ④ 사형은 가장 큰 법익 침해를 가하는 형벌이다." },
             { id: 403, type: 'two-step', difficulty: '최상', case: "형사 절차에서 유죄 판결이 확정되기 전까지는 피의자와 피고인을 무죄로 추정하는 것이 원칙이다.", q1: 'O', q2_question: "다음 중 무죄 추정의 원칙이 적용된 것으로 볼 수 없는 상황은?", q2: ["언론이 피의자에 대해 '범죄자'라는 표현을 사용하지 않고 '피의자' 또는 '혐의자'로 보도하는 것", "경찰 수사가 진행 중인 공무원에 대해 유죄 판결이 나기 전에 직위 해제하고 언론에 실명과 사진을 공개한 경우", "피고인이 범죄 혐의로 수사를 받더라도 불구속으로 수사하는 것을 원칙으로 하는 것", "피고인이 재판 중에도 변호인의 조력을 받을 권리를 보장받는 것"], answerIndex: 1, explanation: "무죄 추정의 원칙은 유죄 판결이 확정되기 전까지는 피의자나 피고인을 무죄로 간주해야 한다는 원칙이다. 유죄가 확정되기 전부터 공무원을 범죄자로 취급하여 언론에 보도하는 것은 무죄 추정의 원칙의 취지에 어긋난다." },
-            { id: 404, type: 'two-step', difficulty: '최상', case: "보안 처분은 형벌과 달리 과거의 불법에 대한 책임에 기초하며, 그 부과에 죄형 법정주의의 소급효 금지 원칙이 예외 없이 적용된다.", q1: 'X', q2_question: "다음 중 보안 처분으로서 사회 복귀 및 교화를 목적으로 하는 시설에 수용되는 사례는?", q2: ["만 17세의 甲이 심각한 범죄로 일반 형사 법원에서 징역형을 선고받고 소년 교도소에 수용된 경우", "만 16세의 乙이 가정 법원 소년부로부터 '장기 소년원 송치' 처분을 받고 소년원에 수용된 경우", "만 20세의 丙이 음주운전으로 집행 유예를 선고받고 사회봉사 명령을 받은 경우", "만 14세의 丁이 심신상실 상태에서 살인죄를 저질러 치료 감호 시설에 수용된 경우"], answerIndex: 1, explanation: "보안 처분은 장래의 위험성을 예방하기 위한 조치로 소급효 금지 원칙이 적용되지 않는다. 소년원은 소년 보호 처분을 받은 소년을 교정 교육을 통해 사회 복귀와 교화를 목적으로 수용하는 시설이다." },
+            { id: 404, type: 'two-step', difficulty: '최상', case: "보안 처분은 형벌과 달리 과거의 불법에 대한 책임에 기초하며, 그 부과에 죄형 법정주의의 소급효 금지 원칙이 예외 없이 적용된다.", q1: 'X', q2_question: "다음 중 소년법상 보호처분으로서 소년의 사회 복귀 및 교화를 목적으로 하는 시설에 수용되는 사례는?", q2: ["만 17세의 甲이 심각한 범죄로 일반 형사 법원에서 징역형을 선고받고 소년 교도소에 수용된 경우", "만 16세의 乙이 가정 법원 소년부로부터 '장기 소년원 송치' 처분을 받고 소년원에 수용된 경우", "만 20세의 丙이 음주운전으로 집행 유예를 선고받고 사회봉사 명령을 받은 경우", "만 14세의 丁이 심신상실 상태에서 살인죄를 저질러 치료 감호 시설에 수용된 경우"], answerIndex: 1, explanation: "보안 처분은 장래의 위험성을 예방하기 위한 조치로 소급효 금지 원칙이 적용되지 않는다. 소년원은 소년 보호 처분을 받은 소년을 교정 교육을 통해 사회 복귀와 교화를 목적으로 수용하는 시설이다." },
             { id: 405, type: 'two-step', difficulty: '최상', case: "강제 처분은 실체적 진실을 발견하고 형벌권을 실현하기 위해 불가피하더라도, 개인의 기본권을 침해하므로 반드시 법률에 의하여 그 종류 및 요건과 절차가 갖추어져야 한다.", q1: 'O', q2_question: "다음 사례는 형사 절차에서 인권 보장을 위한 어떤 원칙을 위반한 것으로 볼 수 있습니까? <br>\"경찰관 甲은 乙을 체포 후, 권리 고지 없이 심문하여 자백을 받았고, 이 자백이 유일한 유죄 증거로 제시되었다.\"", q2: ["영장주의", "무죄 추정의 원칙", "자백 보강 법칙 및 미란다 원칙(진술 거부권 고지)", "적법 절차의 원칙 및 형사 보상 제도"], answerIndex: 2, explanation: "이 사례에서는 乙에게 진술 거부권 등의 고지(미란다 원칙)가 이루어지지 않아 위법하게 수집된 자백에 해당하며, 또한 자백이 유일한 증거로 제시되었으므로 자백 보강 법칙에 위배된다. 이 두 원칙 위반이 핵심이다." },
-            { id: 121, type: 'one-step-ox', difficulty: '하', case: "검사가 공소를 제기하지 않는 처분을 불기소 처분이라고 한다.", q1: 'O', explanation: "수사 결과 피의자의 범죄 혐의가 인정되어도 검사가 공소를 제기하지 않는 처분을 불기소 처분이라고 한다." },
-            { id: 122, type: 'one-step-ox', difficulty: '하', case: "피고인이 유죄 판결을 받을 때까지는 무죄로 추정된다는 원칙은 모든 형사 절차에 적용되는 인권 보장 원칙이다.", q1: 'O', explanation: "무죄 추정의 원칙은 모든 형사 절차에서 피고인이 유죄 판결이 확정될 때까지 무죄로 추정되는 인권 보장 원칙이다." },
-            { id: 216, type: 'single', difficulty: '중', case: "다음 중 형벌에 대한 설명으로 옳지 않은 것은?", q2: ["사형은 생명을 빼앗는 생명형에 해당한다.", "징역은 교정 시설에 수용하여 노역에 복무하게 하는 자유형이다.", "벌금은 재산을 빼앗는 재산형에 해당하며, 원칙적으로 5만 원 이상이다.", "자격 정지는 공무원이 되는 자격이나 선거권 등을 영구적으로 박탈하는 명예형이다."], answerIndex: 3, explanation: "자격 정지는 일정 기간 자격을 정지하는 것이며, 영구적으로 박탈하는 것은 자격 상실입니다." },
-            { id: 217, type: 'single', difficulty: '중', case: "소년 보호 사건의 처리 절차에 대한 설명으로 옳지 않은 것은?", q2: ["19세 미만의 소년에게는 성인 범죄자와 다른 재판 절차와 형 집행 절차를 거칠 수 있다.", "사건의 경중에 따라 보호 관찰, 소년원 송치 등의 보호 처분을 받을 수 있다.", "가정법원소년부에서 재판을 통해 소년범에게 직접 형벌을 부과할 수 없다.", "소년범은 소년 교도소에 수용될 수 있으나, 소년원에는 수용될 수 없다."], answerIndex: 3, explanation: "소년범은 범죄의 경중에 따라 소년 교도소에 수용될 수도 있고, 가정 법원 소년부에서 소년 보호 처분을 받은 경우 소년원에 수용될 수도 있다. ①, ②, ③은 소년 보호 사건 처리 절차의 특칙에 대한 설명으로 옳다." },
-            { id: 218, type: 'single', difficulty: '중', case: "형벌의 종류 중, 교정 시설에 수용하되 노역을 부과하지 않는 형벌은?", q2: ["징역", "금고", "구류", "벌금"], answerIndex: 1, explanation: "금고는 1개월 이상 교정 시설에 수용하여 집행하지만 노역을 부과하지 않는다. 구류도 노역을 부과하지 않으나 기간이 1일 이상 30일 미만으로 제한된다. 징역은 교정 시설에 수용하여 정해진 노역에 복무하게 한다." },
-            { id: 311, type: 'two-step', difficulty: '상', case: "갑은 밤늦게 귀가하던 중 자신에게 흉기를 휘두르며 금품을 요구하는 강도 을을 만났다. 갑은 을의 공격을 막기 위해 우산으로 반격했고, 이로 인해 을은 골절상을 입었다. 이 경우 갑의 행위는 범죄로 성립한다.", q1: 'X', q2_question: "위 사례에서 갑의 행위에 해당하는 위법성 조각 사유는 무엇인가?", q2: ["긴급 피난", "정당방위", "자구 행위", "정당 행위"], answerIndex: 1, explanation: "현재의 부당한 침해에 대한 자기방어이므로 정당방위에 해당한다." },
-            { id: 312, type: 'two-step', difficulty: '상', case: "등산객 갑은 산에서 멧돼지 떼를 만나 위협을 느끼고, 옆에 있던 다른 등산객 을의 텐트 뒤로 몸을 숨겼다. 그 과정에서 텐트가 손상되었다. 이 경우 갑의 행위는 형법상 정당화될 수 있다.", q1: 'O', q2_question: "위 사례에서 갑의 행위에 해당하는 위법성 조각 사유는 무엇인가?", q2: ["정당방위", "긴급 피난", "자구 행위", "정당 행위"], answerIndex: 1, explanation: "자기 법익에 대한 현재의 위난을 피하기 위한 상당한 이유 있는 행위로서 긴급피난에 해당한다." },
-            { id: 313, type: 'two-step', difficulty: '상', case: "택배 기사인 갑은 졸음을 이기지 못해 법정 제한 속도를 일시 초과하며 운전했다. 인명 피해는 없었지만 도로교통법 위반으로 단속되었다. 이 경우 갑의 행위는 정당한 사유에 의해 위법성이 조각된다.", q1: 'X', q2_question: "위 사례에서 갑의 행위가 위법성 조각 사유에 해당한다고 보기 어려운 가장 적절한 이유는?", q2: ["정당방위 요건을 충족하지 못했기 때문이다.", "고의가 없었기 때문이다.", "사회 상규에 어긋나는 행위이기 때문이다.", "법률보다 판례가 우선 적용되기 때문이다."], answerIndex: 2, explanation: "정당 행위로 보기 위해서는 사회 상규에 부합해야 하나, 해당 행위는 이에 어긋난다." },
-            { id: 314, type: 'two-step', difficulty: '상', case: "채무자 갑은 도망 중이었다. 채권자 을은 우연히 길에서 갑을 마주쳐 도망을 막기 위해 그의 가방을 붙잡았고, 이로 인해 가방이 파손되었다. 이 경우 을의 행위는 위법성이 조각된다.", q1: 'O', q2_question: "위 사례에서 을의 행위에 해당하는 위법성 조각 사유는 무엇인가?", q2: ["정당방위", "긴급 피난", "자구 행위", "정당 행위"], answerIndex: 2, explanation: "국가의 구제를 기대하기 어려운 상황에서 청구권 실현을 위한 불가피한 자구 행위다." },
-            { id: 315, type: 'two-step', difficulty: '상', case: "경찰청은 불량 식재료를 유통한 식품 업체에 대한 정보를 수사 후 국민 건강 보호 차원에서 언론에 공표하였다. 이로 인해 업체의 명예는 실추되었다. 이 경우 경찰청의 행위는 위법성이 인정된다.", q1: 'X', q2_question: "위 사례에서 경찰청의 행위에 해당하는 위법성 조각 사유는 무엇인가?", q2: ["정당방위", "긴급 피난", "자구 행위", "정당 행위"], answerIndex: 3, explanation: "공익 목적과 진실성, 필요성이 인정되므로 정당 행위로서 위법성이 조각된다." },
-            { id: 316, type: 'two-step', difficulty: '상', case: "야간 근무 중인 경비원 갑은 침입자를 제지하던 중 반격을 받고, 시설 보호를 위해 물리력을 사용해 제압하였다. 침입자는 경미한 상처를 입었다. 이 경우 갑의 행위는 형법상 범죄로 성립한다.", q1: 'X', q2_question: "위 사례에서 갑의 행위에 해당하는 위법성 조각 사유는 무엇인가?", q2: ["긴급 피난", "정당방위", "자구 행위", "정당 행위"], answerIndex: 1, explanation: "현재의 부당한 침해에 대응한 자기방어로서 정당방위에 해당한다." },
             { id: 406, type: 'two-step', difficulty: '최상', case: "학생 갑은 학교 폭력 가해자로 지목되어 징계가 확정되기 전에 전면 등교 금지 조치를 받았다. 이러한 학교의 조치는 우리 헌법상 형사사법 절차에 적용되는 기본권 보호 원칙에 비추어 정당하다고 볼 수 있는가?", q1: 'X', q2_question: "위 상황에서 갑이 보장받지 못한 형사 절차에서의 인권 보장 원칙은 무엇인가?", q2: ["진술 거부권", "변호인의 조력을 받을 권리", "무죄 추정의 원칙", "증거재판주의"], answerIndex: 2, explanation: "형사 절차에서 유죄 확정 전까지는 무죄로 추정해야 하며, 징계 확정 전 불이익 조치는 위 원칙에 반한다." },
-            { id: 407, type: 'two-step', difficulty: '최상', case: "갑은 2022년 12월 31일 범죄를 저질렀고, 2023년 1월 1일부터 형량이 감경된 개정 법률이 시행되었다. 법원은 갑에게 개정법을 적용했다. 이 경우 법원의 판단은 법적으로 타당하다.", q1: 'O', q2_question: "이 경우 법원의 판단을 뒷받침하는 법 원칙은 무엇인가?", q2: ["죄형 법정주의의 예외", "피고에게 유리한 소급 적용 허용", "적법 절차 원칙", "법관 재량주의"], answerIndex: 1, explanation: "피고에게 유리한 경우에는 소급하여 법을 적용할 수 있다. 형벌 불소급 원칙의 예외이다." }
+            { id: 407, type: 'two-step', difficulty: '최상', case: "갑은 2022년 12월 31일 범죄를 저질렀고, 2023년 1월 1일부터 형량이 감경된 개정 법률이 시행되었다. 법원은 갑에게 개정법을 적용했다. 이 경우 법원의 판단은 법적으로 타당하다.", q1: 'O', q2_question: "이 경우 법원의 판단을 뒷받침하는 법 원칙은 무엇인가?", q2: ["죄형 법정주의의 예외", "피고에게 유리한 소급 적용 허용", "적법 절차 원칙", "법관 재량주의"], answerIndex: 1, explanation: "피고에게 유리한 경우에는 소급하여 법을 적용할 수 있다. 형벌 불소급 원칙의 예외이다." },
+            // 신규 '최상' 난이도 퀴즈
+            { id: 408, type: 'two-step', difficulty: '최상', case: "정당방위가 인정되기 위해서는 침해에 대한 방어행위가 ‘상당성’을 갖추어야 한다.", q1: 'O', q2_question: "갑은 택시기사와 요금 시비 중 얼굴에 침을 맞자 화가 나 주먹으로 기사의 턱을 가격해 골절상을 입혔다. 갑의 행위에 대한 판단으로 옳은 것은?", q2: ["정당방위가 인정된다.", "정당방위이나 과잉방위로 감경된다.", "위법성 조각 사유가 없다.", "책임 조각 사유에 해당한다."], answerIndex: 2, explanation: "침을 맞은 것이 폭행이긴 하나 생명·신체의 실질적 침해로 보기 어려우며, 주먹으로 턱을 골절시킨 것은 상당성을 초과하여 정당방위가 부정된다." },
+            { id: 409, type: 'two-step', difficulty: '최상', case: "긴급피난은 회피를 위한 수단이 사회상규에 위배되어도 적용된다.", q1: 'X', q2_question: "홍수로 인해 탈출이 필요한 상황에서 갑이 타인의 차량을 무단 점유하여 대피하였다. 이후 차량 파손이 발생하였다. 다음 중 옳은 설명은?", q2: ["긴급피난이므로 책임이 조각된다.", "긴급피난이므로 위법성은 조각되나 손해배상 책임은 존재한다.", "위법성이 조각되지 않는다.", "불법행위로 형사처벌 가능하다."], answerIndex: 1, explanation: "긴급피난으로 위법성은 조각되나 민사상 불법행위책임은 여전히 인정된다." },
+            { id: 410, type: 'two-step', difficulty: '최상', case: "자구행위는 청구권 보전 외 보복이나 감정적 목적을 가지면 인정되지 않는다.", q1: 'O', q2_question: "병은 친구가 빌려간 고가의 노트북을 돌려주지 않자 친구가 없는 틈을 타 자택에 무단침입하여 노트북을 가져왔다. 병의 행위는?", q2: ["정당한 자구행위이다.", "절도죄로 위법하다.", "사회상규에 따른 행위이다.", "피해자의 승낙이 있었던 것으로 본다."], answerIndex: 1, explanation: "자구행위로 인정되기 위해선 급박성과 비례성, 불가피성이 충족되어야 하며, 본 사례는 불법침입 및 절도에 해당한다." },
+            { id: 411, type: 'two-step', difficulty: '최상', case: "피해자의 승낙이 있어도 건전한 사회상규를 현저히 위반한 경우 위법성은 조각되지 않는다.", q1: 'O', q2_question: "을은 방송 콘텐츠를 위해 타인의 동의를 받고 심각한 폭력을 행사하여 영상을 촬영하였다. 해당 영상은 유튜브에 업로드되었고, 다수의 신고가 접수되었다. 이 경우 판단은?", q2: ["피해자의 승낙이 있어 위법성 없음", "공공질서 위반으로 위법성 있음", "단순한 동영상으로 형사처벌 불가", "쌍방합의된 사안은 형사처벌 대상 아님"], answerIndex: 1, explanation: "피해자의 승낙이 있다 하더라도 사회통념상 용인되지 않는 경우 위법성이 조각되지 않는다." },
+            { id: 412, type: 'two-step', difficulty: '최상', case: "형법상 심신미약자는 그 책임이 조각되는 것은 아니며 형을 감경할 수 있다.", q1: 'O', q2_question: "정신질환을 앓고 있던 정은 치료 도중 환각 상태에서 타인을 폭행했다. 법원은 정에게 조현병이 있었고 판단력이 저하되어 있었으므로 심신미약 상태였다고 판단했다. 이 경우 법원이 결정할 처분으로 가장 가능성이 높은 것은?", q2: ["무죄 선고", "책임 조각", "형의 감경", "위법성 조각"], answerIndex: 2, explanation: "심신미약 상태로 판단된 경우 범죄는 성립하나 형의 감경이 가능하다." },
+            { id: 413, type: 'two-step', difficulty: '최상', case: "형사 미성년자는 범죄를 저질러도 형벌을 부과할 수 없다.", q1: 'O', q2_question: "만 13세인 김은 무단으로 차량을 운전하다 사고를 냈다. 이 경우의 조치는?", q2: ["자동차등불법사용죄로 형사처벌", "형사책임 감경", "보호처분", "소년교도소 수용"], answerIndex: 2, explanation: "형사 미성년자에게는 형벌 대신 보호처분이 내려질 수 있다." },
+            { id: 414, type: 'two-step', difficulty: '최상', case: "형법상 정당방위는 법익 침해가 우발적으로 발생한 경우에도 적용될 수 있다.", q1: 'O', q2_question: "A는 시장에서 절도범을 제압하려다 범인의 팔을 꺾어 골절시켰다. 범인은 도망 중이었고 저항은 하지 않았다. 이 경우 판단은?", q2: ["정당방위", "과잉방위", "위법성 조각", "책임 조각"], answerIndex: 1, explanation: "실제로 물리적 저항이 없는 상황에서의 공격은 방어의 정도를 초과한 것으로 판단될 수 있다." },
+            { id: 415, type: 'two-step', difficulty: '최상', case: "자구행위는 법정 절차를 밟을 시간적 여유가 전혀 없는 경우에만 인정된다.", q1: 'O', q2_question: "병은 도망치는 절도범을 뒤쫓아 건물 안으로 몰고, 밖에서 문을 잠가 경찰을 기다렸다. 이 행위는?", q2: ["감금죄 성립", "과잉방위", "자구행위로 위법성 조각", "긴급피난"], answerIndex: 2, explanation: "청구권의 실현 및 보호를 위한 불가피한 조치로 자구행위로 인정될 수 있다." },
         ];
 
         // 게임 초기화 함수
@@ -847,22 +928,24 @@
 
         function resetGameState() {
              gameState = {
-                 player: { name: '', class: '', gender: '', level: 1, imageKey: '' },
-                 difficulty: null, lives: 5, monstersDefeated: 0,
-                 currentMonster: null, currentQuiz: null, usedQuizIds: [],
-                 clearedStages: { '하': false, '중': false, '상': false },
-                 isBossFight: false, bossStage: 0,
-                 currentScreen: 'start-screen',
-                 animation: { type: null, progress: 0, duration: 0, shake: 0, monsterXOffset: 0, playerShake: {x: 0, y: 0} },
-                 questionsAttempted: 0,
-                 questionsCorrect: 0,
-                 isSkippable: false,
-                 onSkip: null,
-                 skippableTimeoutId: null,
-                 isChallengeUnlocked: false,
-                 score: 0
+                  player: { name: '', class: '', gender: '', level: 1, imageKey: '' },
+                  difficulty: null, lives: 5, monstersDefeated: 0,
+                  currentMonster: null, currentQuiz: null, usedQuizIds: [],
+                  clearedStages: { '하': false, '중': false, '상': false },
+                  isBossFight: false, bossStage: 0,
+                  currentScreen: 'start-screen',
+                  animation: { type: null, progress: 0, duration: 0, shake: 0, monsterXOffset: 0, playerShake: {x: 0, y: 0} },
+                  questionsAttempted: 0,
+                  questionsCorrect: 0,
+                  isSkippable: false,
+                  onSkip: null,
+                  skippableTimeoutId: null,
+                  isChallengeUnlocked: false,
+                  score: 0
              };
              gameOverDebris = [];
+             lavaParticles = [];
+             skullParticles = [];
         }
 
         // 화면 전환
@@ -935,10 +1018,10 @@
                const isCleared = gameState.clearedStages[diff];
                if(isCleared) {
                    btn.textContent = `${diff} (클리어!)`;
-                   btn.style.backgroundColor = 'var(--success-color)';
+                   btn.classList.add('btn-success');
                } else {
                    btn.textContent = diff;
-                   btn.style.backgroundColor = 'var(--primary-color)';
+                   btn.classList.remove('btn-success');
                }
                btn.classList.toggle('disabled', (diff === '중' && !gameState.clearedStages['하']) || (diff === '상' && !gameState.clearedStages['중']));
             });
@@ -979,10 +1062,10 @@
 
             monsterInfoDisplay.style.display = 'none';
             updateStatus();
-            startDungeonAnimation(true);
+            startDungeonAnimation();
         }
 
-        function startDungeonAnimation(showInitialMessage = false) {
+        function startDungeonAnimation() {
             showScreen('game-screen');
             dungeonPillars = [];
             for (let i = 0; i < 5; i++) {
@@ -999,7 +1082,7 @@
             const callback = () => {
                 if (gameState.animation.type === 'dungeon-intro') {
                     gameState.animation.type = null;
-                    if (showInitialMessage) {
+                    if (!gameState.isBossFight) {
                         showTemporaryMessage("몬스터가 등장했습니다.", 1000, spawnMonster);
                     } else {
                         spawnMonster();
@@ -1216,6 +1299,8 @@
             gameState.lives--;
             updateStatus();
 
+            showTemporaryMessage("몬스터의 공격을 막지 못했다!", 1200);
+
             const quiz = gameState.currentQuiz;
             let explanationText = `<b>오답입니다!</b><br><br><b>정답 해설:</b><br>${quiz.explanation || "해설 정보가 없습니다."}`;
 
@@ -1231,13 +1316,7 @@
                 }
             };
 
-            if (gameState.isBossFight) {
-                showTemporaryMessage("크윽.. 이대로 물러날 수 없다.", 1500, () => {
-                    showMessage(explanationText, nextAction);
-                });
-            } else {
-                setTimeout(() => showMessage(explanationText, nextAction), 1200);
-            }
+            setTimeout(() => showMessage(explanationText, nextAction), 1200);
         }
 
         function startGameOverAnimation() {
@@ -1278,7 +1357,7 @@
             if (bossConditionMet) {
                 gameState.isBossFight = true;
                 gameState.bossStage = 0;
-                showTemporaryMessage("보스가 등장했다!", 1000, spawnMonster);
+                showTemporaryMessage("보스가 등장했다!", 1000, startDungeonAnimation);
             } else {
                 startDungeonAnimation();
             }
@@ -1449,18 +1528,32 @@
         }
 
         function drawDungeonBackground() {
-           const difficulty = gameState.difficulty;
-           let grad1 = '#3d3a5e', grad2 = '#5e5a80', wall = '#33304a';
+            const difficulty = gameState.difficulty;
+            const isBoss = gameState.isBossFight;
+            let grad1 = '#2c2a4a', grad2 = '#1a1832', wall = '#33304a';
 
-           if (difficulty === '중') { grad1 = '#4a3a3a'; grad2 = '#6b5a5a'; wall = '#403030'; }
-           else if (difficulty === '상') { grad1 = '#4a2a4a'; grad2 = '#6b3b6b'; wall = '#402040'; }
-           else if (difficulty === '도전자' || gameState.isBossFight) { grad1 = '#5a2a2a'; grad2 = '#7b3b3b'; wall = '#502020'; }
+            if (isBoss || difficulty === '도전자') {
+                grad1 = '#5a2a2a'; grad2 = '#4b1b1b'; wall = '#502020';
+            } else if (difficulty === '상') {
+                grad1 = '#4a2a4a'; grad2 = '#3b1b3b'; wall = '#402040';
+            } else if (difficulty === '중') {
+                grad1 = '#4a3a3a'; grad2 = '#3b2a2a'; wall = '#403030';
+            }
 
             ctx.fillStyle = grad1;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            if (difficulty === '중') drawChains();
-            if (difficulty === '상' || difficulty === '도전자' || gameState.isBossFight) drawLava();
+            if (isBoss || difficulty === '도전자' || difficulty === '상') {
+                drawSkullsAndBones();
+            }
+            
+            if (isBoss || difficulty === '도전자' || difficulty === '상' || difficulty === '중') {
+                drawChains();
+            }
+            
+            if (isBoss || difficulty === '도전자') {
+                drawLava();
+            }
 
             ctx.fillStyle = grad2;
             ctx.fillRect(0, canvas.height * 0.6, canvas.width, canvas.height * 0.4);
@@ -1496,12 +1589,11 @@
             ctx.fillStyle = grad;
             ctx.fillRect(0, y, canvas.width, lavaHeight);
             
-            // Lava bubbles
-            if(Math.random() < 0.2) {
+            if(Math.random() < 0.3) {
                 lavaParticles.push({
                     x: Math.random() * canvas.width,
                     y: y + Math.random() * lavaHeight,
-                    radius: Math.random() * 10 + 5,
+                    radius: Math.random() * 15 + 5,
                     life: 1,
                     opacity: Math.random() * 0.5 + 0.5
                 });
@@ -1518,6 +1610,25 @@
                 ctx.fillStyle = `rgba(255, 255, 0, ${p.opacity * p.life})`;
                 ctx.fill();
             });
+        }
+
+        function drawSkullsAndBones() {
+            if (skullParticles.length < 10 && Math.random() < 0.1) {
+                skullParticles.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height * (0.6 + Math.random() * 0.4),
+                    size: Math.random() * 20 + 15,
+                    opacity: Math.random() * 0.3 + 0.1
+                });
+            }
+
+            ctx.font = "30px 'MedievalSharp'";
+            ctx.fillStyle = '#bbb';
+            skullParticles.forEach(p => {
+                ctx.globalAlpha = p.opacity;
+                ctx.fillText('💀', p.x, p.y);
+            });
+            ctx.globalAlpha = 1.0;
         }
 
 
@@ -1814,8 +1925,8 @@
         });
         
         document.getElementById('restart-from-scratch-btn').addEventListener('click', () => {
-            saveGame(false); // Save current progress silently
-            startNewGame(); // Start a completely new game
+            localStorage.removeItem('crimeQuizRPGSave');
+            startNewGame();
         });
 
         document.getElementById('back-to-difficulty-btn').addEventListener('click', () => {
@@ -1894,6 +2005,8 @@
                 gameState.player.gender = selected.dataset.gender;
                 gameState.player.imageKey = `${gameState.player.class}_${gameState.player.gender}`;
                 ingameCharChangeModal.style.display = 'none';
+                updateStatus();
+                unlockInput();
             } else {
                 showMessage("변경할 캐릭터를 선택해주세요.");
             }
