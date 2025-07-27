@@ -556,6 +556,8 @@
             bottom: 15px;
             right: 15px;
             z-index: 120;
+            display: flex;
+            gap: 10px;
         }
 
         /* Responsive Design */
@@ -676,6 +678,7 @@
                 <div id="player-info-right">
                     <span>목숨:</span>
                     <span id="status-lives"></span>
+                    <button id="ultimate-skill-btn" class="btn btn-small btn-challenge">궁극기</button>
                     <button id="ingame-change-char-btn" class="btn btn-small">캐릭터 변경</button>
                     <button id="back-to-difficulty-btn" class="btn btn-small">메인으로</button>
                 </div>
@@ -716,8 +719,11 @@
                             <li>난이도별 정답 수를 채우면 강력한 보스가 등장합니다.</li>
                         </ol>
                     </li>
-                    <li><strong>레벨업:</strong> 각 난이도의 보스를 물리칠 때마다 레벨이 오르며, 공격 이펙트가 화려해집니다.</li>
-                    <li><strong>도전자 모드:</strong> 모든 난이도를 클리어하면 '도전자' 모드가 해금됩니다. 이 모드에서는 3개의 목숨으로 최대한 높은 점수를 기록하는 것에 도전합니다!</li>
+                    <li><strong>레벨업:</strong> 각 난이도의 보스를 물리칠 때마다 레벨이 오르며, 공격 이펙트가 화려해집니다. 모든 난이도를 클리어하면 LV.4가 됩니다.</li>
+                    <li><strong>궁극기:</strong> 각 던전마다 단 한 번, 퀴즈를 풀지 않고 몬스터를 즉시 처치하는 '궁극기'를 사용할 수 있습니다. 레벨이 높을수록 더 화려한 이펙트를 볼 수 있습니다.</li>
+                    <li><strong>도전자 모드:</strong> 모든 난이도를 클리어하면 '도전자' 모드가 해금됩니다. 이 모드에서는 3개의 목숨으로 최대한 높은 점수를 기록하는 것에 도전합니다!
+                        <ul><li>도전자 모드에서 <strong>200점 이상</strong>을 획득하면, 캐릭터가 <strong>LV.5</strong>로 각성하여 파멸적인 공격 이펙트를 사용하게 됩니다!</li></ul>
+                    </li>
                     <li><strong>저장/불러오기:</strong> '게임 저장' 또는 '메인으로' 버튼으로 현재 레벨과 클리어 정보를 저장할 수 있습니다. 메인 화면의 '불러오기'로 이어할 수 있습니다.</li>
                 </ul>
                 <button id="instructions-close-btn" class="btn">닫기</button>
@@ -941,7 +947,8 @@
                   onSkip: null,
                   skippableTimeoutId: null,
                   isChallengeUnlocked: false,
-                  score: 0
+                  score: 0,
+                  ultimateSkillUsed: false // 궁극기 사용 여부 추가
              };
              gameOverDebris = [];
              lavaParticles = [];
@@ -1050,6 +1057,7 @@
             gameState.bossStage = 0;
             gameState.questionsAttempted = 0;
             gameState.questionsCorrect = 0;
+            gameState.ultimateSkillUsed = false; // 던전 시작 시 궁극기 초기화
 
             if (difficulty === '상') {
                 gameState.lives = 3;
@@ -1410,9 +1418,14 @@
         }
 
         function showChallengeResult() {
+           if (gameState.score >= 200 && gameState.player.level < 5) {
+                gameState.player.level = 5;
+                saveGame(false); // 레벨 5 달성 저장
+            }
            let resultText = `
                <h2>도전 결과</h2>
                <p><b>${gameState.player.name}</b>님의 최종 점수는 <b>${gameState.score}점</b> 입니다!</p>
+               ${gameState.score >= 200 ? "<p><b>축하합니다! 200점을 돌파하여 LV.5를 달성했습니다!</b></p>" : ""}
                <div class="capture-guide">
                    <h4>결과 화면 캡처 안내</h4>
                    <ul>
@@ -1431,6 +1444,9 @@
             document.getElementById('status-name').textContent = gameState.player.name;
             document.getElementById('status-level').textContent = gameState.player.level;
             document.getElementById('status-lives').textContent = '❤️'.repeat(gameState.lives);
+            const ultimateBtn = document.getElementById('ultimate-skill-btn');
+            ultimateBtn.classList.toggle('disabled', gameState.ultimateSkillUsed);
+            ultimateBtn.textContent = gameState.ultimateSkillUsed ? "사용 완료" : "궁극기";
             updateProgressDisplay();
         }
         
@@ -1537,12 +1553,13 @@
             } else if (difficulty === '상') {
                 grad1 = '#4a2a4a'; grad2 = '#3b1b3b'; wall = '#402040';
             } else if (difficulty === '중') {
-                grad1 = '#4a3a3a'; grad2 = '#3b2a2a'; wall = '#403030';
+                grad1 = '#3a3a4a'; grad2 = '#2a2a3b'; wall = '#303040';
             }
 
             ctx.fillStyle = grad1;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
+            // 난이도별 추가 배경 요소
             if (isBoss || difficulty === '도전자' || difficulty === '상') {
                 drawSkullsAndBones();
             }
@@ -1659,7 +1676,7 @@
                     let x = canvas.width * 0.8 - size + gameState.animation.monsterXOffset;
                     let y = canvas.height * 0.6 - size;
                     
-                    if (gameState.animation.type === 'attack') {
+                    if (gameState.animation.type === 'attack' || gameState.animation.type === 'ultimate-attack') {
                         const progress = gameState.animation.progress / gameState.animation.duration;
                         x += Math.sin(progress * Math.PI * 10) * 10;
                     }
@@ -1694,7 +1711,7 @@
                        const p2 = Math.sin(Math.max(0, (progress - 0.3) / 0.7) * Math.PI);
                        drawSharpSlash(endX, startY - 30, 180, 80, p1, '#ff8800', '#ff4400', 35, 15, -20);
                        drawSharpSlash(endX, startY + 30, 180, 80, p2, '#ff8800', '#ff4400', 35, 15, 20);
-                   } else { 
+                   } else if (level === 4) { 
                        const p_main = Math.sin(Math.min(1, progress / 0.6) * Math.PI);
                        const p_cross = Math.sin(Math.max(0, (progress-0.4)/0.6) * Math.PI);
                        ctx.save();
@@ -1702,6 +1719,14 @@
                        drawSharpSlash(0, 0, 300, 150, p_main, 'cyan', 'white', 60, 30, 45);
                        drawSharpSlash(0, 0, 300, 150, p_cross, 'red', 'white', 60, 20, -45);
                        ctx.restore();
+                   } else { // Level 5
+                        const p = Math.sin(progress * Math.PI);
+                        ctx.fillStyle = `rgba(255, 0, 0, ${p * 0.2})`;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        for(let i=0; i<5; i++) {
+                             const p_slash = Math.sin(Math.max(0, (progress - i*0.1) / 0.5) * Math.PI);
+                             drawSharpSlash(Math.random() * canvas.width, Math.random() * canvas.height, 400, 100, p_slash, 'white', '#ff4444', 50, 20, Math.random() * 360);
+                        }
                    }
                 } else if (gameState.player.class === '마법사') {
                    const currentX = startX + (endX - startX) * progress;
@@ -1722,7 +1747,7 @@
                        if (progress > 0.1 && progress < 0.9 && Math.random() > 0.5) {
                            effectParticles.push({ type: 'lightning', x: startX, y: startY, tx: endX, ty: startY, life: 0.5 });
                        }
-                   } else { 
+                   } else if (level === 4) { 
                        const p_ultimate = Math.sin(progress * Math.PI);
                        ctx.fillStyle = `rgba(255, 215, 0, ${p_ultimate * 0.2})`;
                        ctx.shadowColor = 'gold'; ctx.shadowBlur = 50;
@@ -1730,8 +1755,27 @@
                        if (progress > 0.2 && Math.random() > 0.3) {
                            effectParticles.push({ type: 'lightning', x: endX + (Math.random()-0.5)*200, y: startY + (Math.random()-0.5)*200, tx: endX, ty: startY, life: 0.3 });
                        }
+                   } else { // Level 5
+                        const p = Math.sin(progress * Math.PI);
+                        ctx.fillStyle = `rgba(100, 0, 150, ${p * 0.3})`;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        if (Math.random() < 0.5) {
+                            const x = Math.random() * canvas.width;
+                            const y = Math.random() * canvas.height;
+                            const size = p * 300;
+                            const grad = ctx.createRadialGradient(x, y, 0, x, y, size);
+                            grad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                            grad.addColorStop(0.2, 'rgba(200, 150, 255, 0.5)');
+                            grad.addColorStop(1, 'rgba(100, 0, 150, 0)');
+                            ctx.fillStyle = grad;
+                            ctx.beginPath();
+                            ctx.arc(x, y, size, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
                    }
                 }
+            } else if (gameState.animation.type === 'ultimate-attack') {
+                drawUltimateSkill(deltaTime);
             } else if (gameState.animation.type === 'grand-finale') {
                 drawBowingMonsters();
                 drawKnowledgeBook();
@@ -1890,6 +1934,119 @@
 
             requestAnimationFrame(gameLoop);
         }
+        
+        // --- 궁극기 관련 함수 ---
+        function useUltimateSkill() {
+            if (isInputLocked || gameState.ultimateSkillUsed) return;
+            lockInput();
+            gameState.ultimateSkillUsed = true;
+            updateStatus();
+            quizContainer.style.display = 'none';
+            monsterInfoDisplay.style.display = 'none';
+
+            gameState.animation = { type: 'ultimate-attack', progress: 0, duration: 3000, shake: 10 };
+            
+            setTimeout(() => {
+                showTemporaryMessage("궁극의 기술로 몬스터를 물리쳤다!", 1500, () => {
+                    const quiz = gameState.currentQuiz;
+                    const explanationText = `<b>사용한 문제 해설:</b><br>${quiz.explanation || "해설 정보가 없습니다."}`;
+                    showMessage(explanationText, prepareNextEncounter);
+                });
+            }, 2500);
+        }
+
+        function drawUltimateSkill(deltaTime) {
+            const progress = Math.min(1, gameState.animation.progress / gameState.animation.duration);
+            const level = gameState.player.level;
+            const p_sin = Math.sin(progress * Math.PI);
+
+            if (gameState.player.class === '전사') {
+                if (level <= 1) {
+                    if (progress > 0.1 && progress < 0.9) {
+                        drawSharpSlash(canvas.width/2, canvas.height/2, canvas.height, 100, p_sin, 'white', 'white', 30, 15, 90);
+                    }
+                } else if (level === 2) {
+                     for(let i=0; i<3; i++) {
+                        const p = Math.sin(Math.max(0, (progress - i*0.15) / 0.7) * Math.PI);
+                        drawSharpSlash(canvas.width/2, canvas.height/2, canvas.height * 1.2, 120, p, '#ffdd00', '#ffdd00', 40, 20, 80 + i * 10);
+                    }
+                } else if (level === 3) {
+                    for(let i=0; i<5; i++) {
+                        const p = Math.sin(Math.max(0, (progress - i*0.1) / 0.6) * Math.PI);
+                        drawSharpSlash(canvas.width * (0.2 + i*0.15), canvas.height/2, canvas.height, 100, p, '#ff8800', '#ff4400', 40, 20, 90);
+                    }
+                } else if (level === 4) {
+                     const p1 = Math.sin(Math.min(1, progress/0.5) * Math.PI);
+                     const p2 = Math.sin(Math.max(0, (progress-0.5)/0.5) * Math.PI);
+                     drawSharpSlash(canvas.width/2, canvas.height/2, canvas.width, 150, p1, 'cyan', 'white', 60, 30, 45);
+                     drawSharpSlash(canvas.width/2, canvas.height/2, canvas.width, 150, p2, 'red', 'white', 60, 30, -45);
+                } else { // Level 5
+                    ctx.fillStyle = `rgba(255, 255, 255, ${p_sin * 0.2})`;
+                    ctx.fillRect(0,0,canvas.width, canvas.height);
+                    for(let i=0; i<10; i++) {
+                        const p = Math.sin(Math.max(0, (progress - i*0.05) / 0.5) * Math.PI);
+                        drawSharpSlash(Math.random()*canvas.width, Math.random()*canvas.height, 500, 120, p, `hsl(${i*30}, 100%, 70%)`, 'white', 50, 25, Math.random()*360);
+                    }
+                }
+            } else { // 마법사
+                if (level <= 1) {
+                    if (progress > 0.1 && progress < 0.9 && Math.random() > 0.3) {
+                        effectParticles.push({ type: 'lightning', x: Math.random()*canvas.width, y: 0, tx: Math.random()*canvas.width, ty: canvas.height, life: 0.2 });
+                    }
+                } else if (level === 2) {
+                     if (progress > 0.1 && progress < 0.9) {
+                        for(let i=0; i<3; i++) {
+                            if (Math.random() > 0.7) effectParticles.push({ type: 'lightning', x: Math.random()*canvas.width, y: 0, tx: Math.random()*canvas.width, ty: canvas.height, life: 0.3 });
+                        }
+                     }
+                } else if (level === 3) {
+                    const p = Math.sin(progress * Math.PI * 2);
+                    ctx.save();
+                    ctx.translate(canvas.width/2, canvas.height/2);
+                    ctx.rotate(progress * Math.PI * 4);
+                    for(let i=0; i<8; i++){
+                        ctx.rotate(Math.PI/4);
+                        drawSharpSlash(0,0, 400, 50, p, 'cyan', 'white', 30, 10);
+                    }
+                    ctx.restore();
+                } else if (level === 4) {
+                    const p = Math.sin(progress * Math.PI);
+                    ctx.fillStyle = `rgba(255, 100, 0, ${p * 0.3})`;
+                    ctx.fillRect(0,0,canvas.width, canvas.height);
+                    if (progress > 0.2) {
+                        const size = 400 * Math.sin(Math.max(0, (progress-0.2)/0.8) * Math.PI);
+                        const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, size);
+                        grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                        grad.addColorStop(0.5, 'rgba(255, 200, 0, 0.8)');
+                        grad.addColorStop(1, 'rgba(255, 100, 0, 0)');
+                        ctx.fillStyle = grad;
+                        ctx.fillRect(0,0,canvas.width, canvas.height);
+                    }
+                } else { // Level 5
+                    ctx.fillStyle = `rgba(0,0,0, ${p_sin * 0.5})`;
+                    ctx.fillRect(0,0,canvas.width, canvas.height);
+                    if(progress > 0.2 && progress < 0.8) {
+                        const p = (progress-0.2)/0.6;
+                        const x = canvas.width/2;
+                        const y = canvas.height/2;
+                        const radius = canvas.width * p;
+                        ctx.strokeStyle = 'white';
+                        ctx.lineWidth = 5;
+                        ctx.shadowColor = 'purple';
+                        ctx.shadowBlur = 50;
+                        ctx.beginPath();
+                        ctx.arc(x, y, radius, 0, Math.PI * 2);
+                        ctx.stroke();
+                        if (progress > 0.7) {
+                             const p_flash = (progress-0.7)/0.3;
+                             ctx.fillStyle = `rgba(255,255,255, ${Math.sin(p_flash * Math.PI)})`;
+                             ctx.fillRect(0,0,canvas.width, canvas.height);
+                        }
+                    }
+                }
+            }
+        }
+
 
         // 이벤트 리스너 설정
         window.addEventListener('load', async () => {
@@ -1947,7 +2104,7 @@
             if (!name) { showMessage("캐릭터 이름을 입력해주세요."); return; }
             if (!selected) { showMessage("캐릭터를 선택해주세요."); return; }
             
-            const level = gameState.player.level || 1;
+            const level = gameState.player.level
             const clearedStages = gameState.clearedStages || { '하': false, '중': false, '상': false };
             const isChallengeUnlocked = gameState.isChallengeUnlocked || false;
 
