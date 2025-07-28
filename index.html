@@ -508,21 +508,21 @@
             color: var(--accent-color);
         }
         #message-text .capture-guide {
-           font-size: 0.9em;
-           margin-top: 20px;
-           padding-top: 15px;
-           border-top: 1px solid var(--primary-color);
+          font-size: 0.9em;
+          margin-top: 20px;
+          padding-top: 15px;
+          border-top: 1px solid var(--primary-color);
         }
         #message-text .capture-guide h4 {
-           color: var(--accent-color);
-           margin-bottom: 10px;
+          color: var(--accent-color);
+          margin-bottom: 10px;
         }
         #message-text .capture-guide ul {
-           list-style: none;
-           padding: 0;
+          list-style: none;
+          padding: 0;
         }
         #message-text .capture-guide li {
-           margin-bottom: 8px;
+          margin-bottom: 8px;
         }
 
         #instructions-modal .modal-content {
@@ -751,7 +751,7 @@
                         <ul>
                             <li>각 던전마다 한 번, 퀴즈를 풀지 않고 몬스터를 즉시 처치하는 강력한 기술입니다.</li>
                             <li>'궁극기' 버튼으로 사용하며, 사용 시 해당 문제의 정답과 해설이 표시됩니다.</li>
-                            <li>궁극기 사용은 '푼 문제'나 '정답' 횟수에 포함되지 않습니다.</li>
+                            <li>궁극기는 정답 횟수에 포함되지 않습니다.</li>
                             <li>주의: '하', '중', '상' 난이도의 보스에게는 사용할 수 없습니다. ('도전자' 모드에서는 가능)</li>
                         </ul>
                     </li>
@@ -861,14 +861,14 @@
                 2: "이중 베기",
                 3: "검의 춤",
                 4: "십자 가르기",
-                5: "멸망의 심판"
+                5: "차원 베기" // 수정
             },
             '마법사': {
                 1: "마력 화살",
                 2: "얼음 송곳",
                 3: "연쇄 번개",
-                4: "화염 운석",
-                5: "원소 폭발"
+                4: "거대 화염 운석", // 수정
+                5: "원소 대폭발" // 수정
             }
         };
 
@@ -878,7 +878,7 @@
                 2: "진 폭풍 가르기",
                 3: "검의 비",
                 4: "병기 폭풍",
-                5: "천벌"
+                5: "차원 붕괴" // 수정
             },
             '마법사': {
                 1: "얼음의 비",
@@ -1004,7 +1004,6 @@
             { id: 414, type: 'two-step', difficulty: '최상', case: "형법상 정당방위는 법익 침해가 우발적으로 발생한 경우에도 적용될 수 있다.", q1: 'O', q2_question: "A는 시장에서 절도범을 제압하려다 범인의 팔을 꺾어 골절시켰다. 범인은 도망 중이었고 저항은 하지 않았다. 이 경우 판단은?", q2: ["정당방위", "과잉방위", "위법성 조각", "책임 조각"], answerIndex: 1, explanation: "실제로 물리적 저항이 없는 상황에서의 공격은 방어의 정도를 초과한 것으로 판단될 수 있다." },
             { id: 415, type: 'two-step', difficulty: '최상', case: "자구행위는 법정 절차를 밟을 시간적 여유가 전혀 없는 경우에만 인정된다.", q1: 'O', q2_question: "병은 도망치는 절도범을 뒤쫓아 건물 안으로 몰고, 밖에서 문을 잠가 경찰을 기다렸다. 이 행위는?", q2: ["감금죄 성립", "과잉방위", "자구행위로 위법성 조각", "긴급피난"], answerIndex: 2, explanation: "청구권의 실현 및 보호를 위한 불가피한 조치로 자구행위로 인정될 수 있다." }, 
         ];
-        
         // ==================================================================
         // 게임 초기화 및 상태 관리
         // ==================================================================
@@ -1252,11 +1251,6 @@
         }
 
         function startQuiz() {
-            // BUG FIX: 궁극기 사용 시 '푼 문제' 카운트되지 않도록 수정
-            // handleUltimateSkill 함수에서 처리하므로 여기서는 항상 증가시킵니다.
-            // 단, handleUltimateSkill에서는 이 값을 증가시키지 않습니다.
-            gameState.questionsAttempted++;
-            updateStatus();
             let quizDifficulty;
 
             if (gameState.difficulty === '도전자') {
@@ -1342,6 +1336,9 @@
             if (isInputLocked) return;
             lockInput();
 
+            gameState.questionsAttempted++; // 1단계 문제 시도 시 카운트
+            updateStatus();
+
             const quiz = gameState.currentQuiz;
             if (answer === quiz.q1) {
                 if (quiz.type === 'one-step-ox') {
@@ -1357,6 +1354,11 @@
         function handleQ2Answer(index) {
             if (isInputLocked) return;
             lockInput();
+
+            if (gameState.currentQuiz.type === 'two-step') {
+                gameState.questionsAttempted++; // 2단계 문제 시도 시 카운트
+                updateStatus();
+            }
 
             if (index == gameState.currentQuiz.answerIndex) {
                 handleCorrectAnswer();
@@ -1375,11 +1377,7 @@
 
             lockInput();
             gameState.hasUsedUltimate = true;
-            
-            // BUG FIX: 궁극기 사용 시 '푼 문제' 카운트되지 않도록 수정
-            // questionsAttempted를 여기서 증가시키지 않습니다.
-            updateStatus(); 
-            
+            updateStatus();
             showQuizContainer(false);
             monsterInfoDisplay.style.display = 'none';
             
@@ -1397,15 +1395,13 @@
 
         function handleCorrectAnswer() {
            if (gameState.difficulty === '도전자') {
-               const scoreMap = {'하': 10, '중': 20, '상': 30, '보스': 50, '최상': 50};
-               gameState.score += scoreMap[gameState.currentQuiz.difficulty] || 20;
-               if (gameState.score >= 200 && gameState.player.level < 5) {
-                   gameState.player.level = 5;
-                   showTemporaryMessage("레벨 5 달성! 파멸적인 힘이 느껴진다!", 2000);
-               }
+                const scoreMap = {'하': 10, '중': 20, '상': 30, '보스': 50, '최상': 50};
+                gameState.score += scoreMap[gameState.currentQuiz.difficulty] || 20;
+                if (gameState.score >= 200 && gameState.player.level < 5) {
+                    gameState.player.level = 5;
+                    showTemporaryMessage("레벨 5 달성! 파멸적인 힘이 느껴진다!", 2000);
+                }
            }
-            // BUG FIX: '푼 문제'가 2씩 오르는 문제 해결
-            // questionsCorrect만 1 증가시킵니다. questionsAttempted는 startQuiz에서 이미 1 증가했습니다.
             gameState.questionsCorrect++;
             updateStatus();
             showQuizContainer(false);
@@ -1590,7 +1586,6 @@
                 const bossThresholds = { '하': 5, '중': 8, '상': 10 };
                 const needed = bossThresholds[gameState.difficulty];
                 const remaining = Math.max(0, needed - gameState.questionsCorrect);
-                // BUG FIX: '푼 문제' 표기 수정
                 progressText = `푼 문제: ${gameState.questionsAttempted} | 정답: ${gameState.questionsCorrect}`;
                 if (!gameState.isBossFight && !gameState.clearedStages[gameState.difficulty]) {
                     progressText += ` | 보스까지: ${remaining}문제`;
@@ -1952,54 +1947,43 @@
             const endY = canvas.height * 0.65;
             
             if (gameState.player.class === '전사') {
-                 // ... (기존 전사 공격 코드)
-                 const easeOutProgress = 1 - Math.pow(1 - progress, 4);
-                 const travelX = startX + (endX - startX) * easeOutProgress;
-                 const alpha = Math.sin(progress * Math.PI);
+                if (level < 5) {
+                    const easeOutProgress = 1 - Math.pow(1 - progress, 4);
+                    const travelX = startX + (endX - startX) * easeOutProgress;
+                    const alpha = Math.sin(progress * Math.PI);
 
-                 if (level <= 1) {
-                     drawSharpSlash(travelX, startY, 120, 60, alpha, 'white', 'white', 15, 8);
-                 } else if (level === 2) {
-                     drawSharpSlash(travelX, startY, 140, 70, alpha, '#ffdd00', '#ffdd00', 25, 10);
-                 } else if (level === 3) {
-                     const p1 = Math.sin(Math.min(1, progress / 0.7) * Math.PI);
-                     const p2 = Math.sin(Math.max(0, (progress - 0.3) / 0.7) * Math.PI);
-                     drawSharpSlash(endX, startY - 30, 180, 80, p1, '#ff8800', '#ff4400', 35, 15, -20);
-                     drawSharpSlash(endX, startY + 30, 180, 80, p2, '#ff8800', '#ff4400', 35, 15, 20);
-                 } else if (level === 4) {
-                     const p_main = Math.sin(Math.min(1, progress / 0.6) * Math.PI);
-                     const p_cross = Math.sin(Math.max(0, (progress-0.4)/0.6) * Math.PI);
-                     ctx.save();
-                     ctx.translate(endX, startY);
-                     drawSharpSlash(0, 0, 300, 150, p_main, 'cyan', 'white', 60, 30, 45);
-                     drawSharpSlash(0, 0, 300, 150, p_cross, 'red', 'white', 60, 20, -45);
-                     ctx.restore();
-                 } else { // Level 5
-                    // BUG FIX: 전사 5레벨 궁극기 화면 깨짐 문제 해결
-                    // 충격파 이펙트를 지면 폭발 이펙트로 대체
+                    if (level <= 1) {
+                        drawSharpSlash(travelX, startY, 120, 60, alpha, 'white', 'white', 15, 8);
+                    } else if (level === 2) {
+                        drawSharpSlash(travelX, startY, 140, 70, alpha, '#ffdd00', '#ffdd00', 25, 10);
+                    } else if (level === 3) {
+                        const p1 = Math.sin(Math.min(1, progress / 0.7) * Math.PI);
+                        const p2 = Math.sin(Math.max(0, (progress - 0.3) / 0.7) * Math.PI);
+                        drawSharpSlash(endX, startY - 30, 180, 80, p1, '#ff8800', '#ff4400', 35, 15, -20);
+                        drawSharpSlash(endX, startY + 30, 180, 80, p2, '#ff8800', '#ff4400', 35, 15, 20);
+                    } else if (level === 4) {
+                        const p_main = Math.sin(Math.min(1, progress / 0.6) * Math.PI);
+                        const p_cross = Math.sin(Math.max(0, (progress-0.4)/0.6) * Math.PI);
+                        ctx.save();
+                        ctx.translate(endX, startY);
+                        drawSharpSlash(0, 0, 300, 150, p_main, 'cyan', 'white', 60, 30, 45);
+                        drawSharpSlash(0, 0, 300, 150, p_cross, 'red', 'white', 60, 20, -45);
+                        ctx.restore();
+                    }
+                } else { // Level 5: 차원 베기
                     const p = Math.sin(progress * Math.PI);
-                    if (progress > 0.2 && progress < 0.8) {
-                        const explosionCount = 5;
-                        for (let i = 0; i < explosionCount; i++) {
-                            const explosionProgress = Math.max(0, (progress - (0.2 + i * 0.1)) / 0.5);
-                            if (explosionProgress > 0) {
-                                const explosionRadius = 150 * Math.sin(explosionProgress * Math.PI);
-                                const explosionX = endX + (Math.random() - 0.5) * 100;
-                                const explosionY = endY + (Math.random() - 0.5) * 50;
-                                drawExplosion(explosionX, explosionY, explosionRadius, '#e74c3c', '#ff8c00');
-                            }
-                        }
+                    const vortexProgress = Math.min(1, progress * 2);
+                    drawVortex(endX, endY, 150 * vortexProgress, progress);
+                    
+                    if (progress > 0.4 && progress < 0.7) {
+                        const slashP = (progress - 0.4) / 0.3;
+                        drawDimensionalSlash(endX, endY, 300, `rgba(142, 68, 173, ${Math.sin(slashP * Math.PI)})`);
                     }
-                    // 화면 흔들림 효과는 유지하되, transform을 루프 마지막에 초기화하도록 수정
-                    if (progress > 0.2 && progress < 0.8) {
-                        const shake = 20 * p;
-                        canvas.style.transform = `translate(${Math.random() * shake - shake / 2}px, ${Math.random() * shake - shake / 2}px)`;
-                    }
-                 }
+                }
             } else if (gameState.player.class === '마법사') {
                 const chargeProgress = Math.min(1, progress / 0.5);
                 const travelProgress = Math.max(0, (progress - 0.5) / 0.5);
-                const impactProgress = Math.max(0, (progress - 0.8) / 0.2); // 타격 시간 조정
+                const impactProgress = Math.max(0, (progress - 0.9) / 0.1);
 
                 const projectileX = startX + (endX - startX) * travelProgress;
                 const projectileY = startY;
@@ -2020,46 +2004,37 @@
                             effectParticles.push({ type: 'lightning', x: startX, y: startY, tx: endX, ty: endY, life: 0.5, color: '#f1c40f' });
                         }
                     }
-                } else if (level === 4) { // Lv 4: 화염 운석 (개선)
-                    drawMagicCircle(startX, startY, 60 * chargeProgress, '#e74c3c', `rgba(255, 100, 0, ${0.5 * chargeProgress})`);
-                    if (progress > 0.5 && progress < 0.9) {
-                        drawMeteorProjectile(projectileX, projectileY, 45); // 크기 증가
+                } else if (level === 4) { // Lv 4: 거대 화염 운석
+                    drawMagicCircle(startX, startY, 70 * chargeProgress, '#e74c3c', `rgba(255, 100, 0, ${0.5 * chargeProgress})`);
+                    if (progress > 0.5) {
+                        drawMeteorProjectile(projectileX, projectileY, 50); // 크기 증가
                     }
                     if (impactProgress > 0) {
-                        // 연쇄 폭발 효과
-                        for (let i = 0; i < 3; i++) {
-                            const explosionProgress = Math.max(0, (impactProgress - i * 0.2) / 0.8);
-                            if (explosionProgress > 0) {
-                                const radius = 200 * Math.sin(explosionProgress * Math.PI);
-                                const offsetX = (Math.random() - 0.5) * 100 * i;
-                                const offsetY = (Math.random() - 0.5) * 50 * i;
-                                drawExplosion(endX + offsetX, endY + offsetY, radius, '#ff4500', 'red');
-                            }
+                        drawExplosion(endX, endY, 250 * impactProgress, '#ff4500', 'red'); // 폭발 크기 증가
+                        if (Math.random() < impactProgress * 3) { // 연쇄 폭발 효과
+                             effectParticles.push({ type: 'secondary_explosion', x: endX + (Math.random()-0.5)*150, y: endY + (Math.random()-0.5)*150, life: 0.5, maxLife: 0.5, radius: 100 });
                         }
                     }
-                } else { // Lv 5: 원소 폭발 (개선)
+                } else { // Lv 5: 원소 대폭발
                     const colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71'];
-                    drawMagicCircle(startX, startY, 80 * chargeProgress, 'white', `rgba(255, 255, 255, ${0.3 * chargeProgress})`, colors);
-                    if (progress > 0.5 && progress < 0.9) {
+                    drawMagicCircle(startX, startY, 90 * chargeProgress, 'white', `rgba(255, 255, 255, ${0.3 * chargeProgress})`, colors);
+                    if (progress > 0.5) {
                         colors.forEach((color, i) => {
-                            const angle = (i / colors.length) * Math.PI * 2 + progress * 15;
-                            const orbitX = projectileX + Math.cos(angle) * 50;
-                            const orbitY = projectileY + Math.sin(angle) * 50;
-                            drawElementProjectile(orbitX, orbitY, 30, color); // 크기 증가
+                            const angle = (i / colors.length) * Math.PI * 2 + progress * 10;
+                            const orbitX = projectileX + Math.cos(angle) * 40;
+                            const orbitY = projectileY + Math.sin(angle) * 40;
+                            drawElementProjectile(orbitX, orbitY, 25, color); // 크기 증가
                         });
                     }
                     if (impactProgress > 0) {
-                        // 더 강력한 연쇄 폭발
-                         for (let i = 0; i < 5; i++) {
-                            const explosionProgress = Math.max(0, (impactProgress - i * 0.15) / 0.85);
-                            if (explosionProgress > 0) {
-                                const radius = 250 * Math.sin(explosionProgress * Math.PI);
-                                const offsetX = (Math.random() - 0.5) * 150 * i * 0.5;
-                                const offsetY = (Math.random() - 0.5) * 80 * i * 0.5;
-                                const color = colors[i % colors.length];
-                                drawExplosion(endX + offsetX, endY + offsetY, radius, color, color);
+                        colors.forEach(color => {
+                            const offsetX = (Math.random() - 0.5) * 120;
+                            const offsetY = (Math.random() - 0.5) * 120;
+                            drawExplosion(endX + offsetX, endY + offsetY, 180 * impactProgress, color, color); // 폭발 크기 증가
+                            if (Math.random() < impactProgress * 4) { // 연쇄 폭발 효과
+                                effectParticles.push({ type: 'secondary_explosion', x: endX + (Math.random()-0.5)*200, y: endY + (Math.random()-0.5)*200, life: 0.6, maxLife: 0.6, radius: 120, color: color });
                             }
-                        }
+                        });
                     }
                 }
             }
@@ -2075,68 +2050,118 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (gameState.player.class === '전사') {
-                if (level <= 2) { // Lv 1, 2
-                    if (progress > 0.1 && progress < 0.8) drawRandomSlash(level + 1, 180 + level * 40, level === 2 ? '#ffdd00' : 'white');
-                    if (progress > 0.8) drawFinalSlash(progress, level === 2 ? '#ffdd00' : '#aaa', 200 + level * 50);
-                } else if (level === 3) { // Lv 3: 검의 비 + 종단 참격
-                    if (Math.random() < progress * 5) {
-                        const sx = Math.random() * canvas.width;
-                        const ex = sx + (Math.random() - 0.5) * 50;
-                        const ey = canvas.height * 0.8;
-                        effectParticles.push({ type: 'falling_weapon', sx: sx, sy: -50, ex: ex, ey: ey, life: 1, maxLife: 1, weapon: 'sword' });
-                    }
-                    if (progress > 0.1 && progress < 0.9) drawRandomSlash(5, 250, '#aaa');
-                    if (progress > 0.7) drawFinalSlash(progress, '#ff4400', 350, false, true); // 종단 참격
-                } else if (level === 4) { // Lv 4: 병기 폭풍 + 종/횡단 참격
-                    if (Math.random() < progress * 7) {
-                        const weaponTypes = ['sword', 'spear', 'arrow'];
-                        const weapon = weaponTypes[Math.floor(Math.random() * weaponTypes.length)];
-                        const sx = Math.random() * canvas.width;
-                        const ex = sx + (Math.random() - 0.5) * 100;
-                        const ey = canvas.height * 0.8;
-                        effectParticles.push({ type: 'falling_weapon', sx: sx, sy: -50, ex: ex, ey: ey, life: 1, maxLife: 1, weapon: weapon });
-                    }
-                    if (progress > 0.1 && progress < 0.9) drawRandomSlash(7, 300, 'cyan');
-                    if (progress > 0.6) drawFinalSlash(progress, 'cyan', 450, true, true); // 종/횡단 참격
-                } else { // Lv 5: 천벌
-                    // BUG FIX: 전사 5레벨 궁극기 화면 깨짐 문제 해결
-                    const p = (progress - 0.5) / 0.5;
-                    if (p > 0) {
-                        const impactProgress = Math.max(0, (p - 0.7) / 0.3);
-                        if (impactProgress > 0) {
-                             const groundY = canvas.height * 0.8;
-                             const explosionCount = 10;
-                             for (let i = 0; i < explosionCount; i++) {
-                                 const explosionProgress = Math.max(0, (impactProgress - i * 0.05) / 0.7);
-                                 if (explosionProgress > 0) {
-                                     const radius = 300 * Math.sin(explosionProgress * Math.PI);
-                                     const x = (canvas.width / explosionCount) * i + (Math.random() - 0.5) * 50;
-                                     drawExplosion(x, groundY, radius, '#ff8c00', '#e74c3c');
-                                 }
-                             }
-                        }
-                        if (impactProgress > 0.1 && impactProgress < 0.9) {
-                            const shake = 30 * Math.sin((impactProgress-0.1)/0.8 * Math.PI);
-                            canvas.style.transform = `translate(${Math.random() * shake - shake / 2}px, ${Math.random() * shake - shake / 2}px)`;
+                if (level < 5) {
+                     if (level <= 2) { // Lv 1, 2
+                         if (progress > 0.1 && progress < 0.8) drawRandomSlash(level + 1, 180 + level * 40, level === 2 ? '#ffdd00' : 'white');
+                         if (progress > 0.8) drawFinalSlash(progress, level === 2 ? '#ffdd00' : '#aaa', 200 + level * 50);
+                     } else if (level === 3) { // Lv 3: 검의 비 + 종단 참격
+                         if (Math.random() < progress * 5) {
+                             const sx = Math.random() * canvas.width;
+                             const ex = sx + (Math.random() - 0.5) * 50;
+                             const ey = canvas.height * 0.8;
+                             effectParticles.push({ type: 'falling_weapon', sx: sx, sy: -50, ex: ex, ey: ey, life: 1, maxLife: 1, weapon: 'sword' });
+                         }
+                         if (progress > 0.1 && progress < 0.9) drawRandomSlash(5, 250, '#aaa');
+                         if (progress > 0.7) drawFinalSlash(progress, '#ff4400', 350, false, true); // 종단 참격
+                     } else if (level === 4) { // Lv 4: 병기 폭풍 + 종/횡단 참격
+                         if (Math.random() < progress * 7) {
+                             const weaponTypes = ['sword', 'spear', 'arrow'];
+                             const weapon = weaponTypes[Math.floor(Math.random() * weaponTypes.length)];
+                             const sx = Math.random() * canvas.width;
+                             const ex = sx + (Math.random() - 0.5) * 100;
+                             const ey = canvas.height * 0.8;
+                             effectParticles.push({ type: 'falling_weapon', sx: sx, sy: -50, ex: ex, ey: ey, life: 1, maxLife: 1, weapon: weapon });
+                         }
+                         if (progress > 0.1 && progress < 0.9) drawRandomSlash(7, 300, 'cyan');
+                         if (progress > 0.6) drawFinalSlash(progress, 'cyan', 450, true, true); // 종/횡단 참격
+                     }
+                } else { // Lv 5: 차원 붕괴
+                    const p1 = Math.min(1, progress / 0.7); // 무수한 참격 및 병기
+                    const p2 = Math.max(0, (progress - 0.5) / 0.5); // 심판의 검
+                    const p3 = Math.max(0, (progress - 0.8) / 0.2); // 최후의 일격
+
+                    // 1. 무수한 참격과 병기
+                    if (p1 > 0.1 && p1 < 0.95) {
+                        drawRandomSlash(10, 400, `hsl(${Math.random()*60 + 240}, 100%, 70%)`);
+                        if (Math.random() < p1 * 10) {
+                            const weaponTypes = ['sword', 'spear', 'axe', 'mace'];
+                            const weapon = weaponTypes[Math.floor(Math.random() * weaponTypes.length)];
+                            const sx = Math.random() > 0.5 ? -50 : canvas.width + 50;
+                            const sy = Math.random() * canvas.height;
+                            const ex = canvas.width / 2 + (Math.random() - 0.5) * 300;
+                            const ey = canvas.height / 2 + (Math.random() - 0.5) * 300;
+                            effectParticles.push({ type: 'flying_weapon', sx, sy, ex, ey, life: 0.5, maxLife: 0.5, weapon });
                         }
                     }
-                    if (progress > 0.5) drawJudgmentSword(progress);
+                    
+                    // 2. 심판의 검
+                    drawJudgmentSword(p2);
+
+                    // 3. 최후의 일격 (화면 전체 차원 베기)
+                    if (p3 > 0) {
+                        const slashP = Math.sin(p3 * Math.PI);
+                        drawDimensionalSlash(canvas.width / 2, canvas.height / 2, canvas.width * 1.5, `rgba(255, 255, 255, ${slashP})`);
+                        drawVortex(canvas.width / 2, canvas.height / 2, canvas.width * p3, p3);
+                        const shake = 40 * slashP;
+                        canvas.style.transform = `translate(${Math.random() * shake - shake/2}px, ${Math.random() * shake - shake/2}px)`;
+                    }
                 }
             } else if (gameState.player.class === '마법사') {
-                if (level <= 3) { // 기존 1-3레벨 궁극기
+                if (level <= 3) {
                     const effects = [drawIceRain, drawTornado, drawMultiLightning];
                     effects[level - 1](progress);
-                } else if (level === 4) { // Lv 4: 유성우 (개선)
+                } else if (level === 4) {
                     drawMeteorShower(progress);
-                } else { // Lv 5: 원소의 격류 (개선)
+                } else { // Lv 5: 원소의 격류
                     drawGrandElemental(progress);
+                    // 마지막에 모든 원소의 대폭발 추가
+                    const explosionProgress = Math.max(0, (progress - 0.8) / 0.2);
+                    if (explosionProgress > 0) {
+                        drawExplosion(canvas.width / 2, canvas.height / 2, canvas.width * explosionProgress, 'white', 'white');
+                        const colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71'];
+                        colors.forEach(color => {
+                             drawExplosion(canvas.width/2 + (Math.random()-0.5)*200, canvas.height/2 + (Math.random()-0.5)*200, 200 * explosionProgress, color, color);
+                        });
+                    }
                 }
             }
             
-            // 전사 5레벨 궁극기 후 화면 틀어짐 버그 수정
             if (progress >= 1) {
                 canvas.style.transform = 'none';
             }
+        }
+        
+        // --- 신규/수정된 전사 스킬 이펙트 함수 ---
+        function drawDimensionalSlash(x, y, size, color) {
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size * 0.1;
+            ctx.shadowColor = '#9b59b6';
+            ctx.shadowBlur = size * 0.2;
+            ctx.beginPath();
+            ctx.moveTo(x - size / 2, y + size / 4);
+            ctx.bezierCurveTo(x - size / 4, y, x + size / 4, y, x + size / 2, y - size / 4);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawVortex(x, y, radius, progress) {
+            ctx.save();
+            ctx.translate(x, y);
+            const p = Math.sin(progress * Math.PI);
+            for (let i = 0; i < 50; i++) {
+                const angle = (Date.now() / 10 + i * 25) * 0.1;
+                const r = (i / 50) * radius;
+                const particleX = Math.cos(angle) * r;
+                const particleY = Math.sin(angle) * r;
+                const dist = (i / 50);
+                ctx.fillStyle = `hsl(${280 + dist * 50}, 100%, ${50 + dist * 50}%)`;
+                ctx.globalAlpha = (1 - dist) * p;
+                ctx.beginPath();
+                ctx.arc(particleX, particleY, (1 - dist) * radius * 0.1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
         }
 
         function drawRandomSlash(count, length = 200, color = 'white') {
@@ -2215,7 +2240,15 @@
             ctx.fillRect(-swordSize * 0.2, swordSize * 0.65, swordSize * 0.4, swordSize * 0.05);
             ctx.restore();
 
-            // Impact is now handled in the main drawUltimateAttack function for Lv5 Warrior
+            // Impact
+            if (impactProgress > 0) {
+                const shockwaveAlpha = Math.sin(impactProgress * Math.PI);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${shockwaveAlpha})`;
+                ctx.lineWidth = 20 * (1 - impactProgress);
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, endY + swordSize, canvas.width * impactProgress, 0, Math.PI * 2);
+                ctx.stroke();
+            }
         }
 
         function drawIceRain(progress) {
@@ -2255,7 +2288,7 @@
             }
         }
         
-        // --- 신규/수정된 마법사 스킬 이펙트 함수 ---
+        // --- 신규/수정된 마법사 스킬 이펙트 함수 --- 
 
         function drawMagicCircle(x, y, radius, color, glowColor, segmentColors = []) {
             ctx.save();
@@ -2438,19 +2471,19 @@
         
         function drawConfetti(deltaTime) {
              effectParticles.forEach((p, index) => {
-                  p.life -= deltaTime / 3000;
-                  if (p.life <= 0) { effectParticles.splice(index, 1); return; }
-                  
-                  p.x += p.vx * (deltaTime / 16); p.y += p.vy * (deltaTime / 16);
-                  p.vy += 0.1 * (deltaTime / 16);
-                  
-                  ctx.save();
-                  ctx.globalAlpha = p.life > 0 ? p.life : 0;
-                  ctx.translate(p.x, p.y);
-                  ctx.fillStyle = p.color;
-                  ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-                  ctx.restore();
-                });
+                 p.life -= deltaTime / 3000;
+                 if (p.life <= 0) { effectParticles.splice(index, 1); return; }
+                 
+                 p.x += p.vx * (deltaTime / 16); p.y += p.vy * (deltaTime / 16);
+                 p.vy += 0.1 * (deltaTime / 16);
+                 
+                 ctx.save();
+                 ctx.globalAlpha = p.life > 0 ? p.life : 0;
+                 ctx.translate(p.x, p.y);
+                 ctx.fillStyle = p.color;
+                 ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                 ctx.restore();
+               });
         }
         
         function updateAndDrawMiscParticles(deltaTime) {
@@ -2518,20 +2551,24 @@
                         drawExplosion(p.x, p.y, 100, p.elementType, p.elementType);
                     }
                     drawElementProjectile(p.x, p.y, p.size, p.elementType);
-                } else if (p.type === 'falling_weapon') {
+                } else if (p.type === 'falling_weapon' || p.type === 'flying_weapon') {
                     const p_life = 1 - (p.life / p.maxLife);
                     p.x = p.sx + (p.ex - p.sx) * p_life;
                     p.y = p.sy + (p.ey - p.sy) * p_life;
+                    const angle = Math.atan2(p.ey - p.sy, p.ex - p.sx) * 180 / Math.PI + 90;
                     if (p.life < 0.1) {
                         p.life = 0;
                         for(let i=0; i<3; i++) effectParticles.push({ type: 'dust_puff', x: p.x, y: p.y, life: 0.5 });
                     }
-                    drawWeapon(p.x, p.y, p.weapon, 50, 90 + p_life * 90);
+                    drawWeapon(p.x, p.y, p.weapon, 50, angle);
                 } else if (p.type === 'dust_puff') {
                     ctx.fillStyle = `rgba(150, 130, 110, ${p.life * 0.5})`;
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, 30 * (1-p.life), 0, Math.PI * 2);
                     ctx.fill();
+                } else if (p.type === 'secondary_explosion') {
+                    const p_life = 1 - (p.life / p.maxLife);
+                    drawExplosion(p.x, p.y, p.radius * Math.sin(p_life * Math.PI), p.color || '#ff8c00', p.color || 'red');
                 }
 
                 ctx.restore();
