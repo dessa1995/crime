@@ -773,10 +773,10 @@
                 <h3>캐릭터 변경</h3>
                 <p>원하는 직업과 성별을 선택하세요.</p>
                 <div class="char-options">
-                     <div class="char-card" data-class="전사" data-gender="남">
-                         <img src="https://raw.githubusercontent.com/dessa1995/crime/main/mw.png" alt="남자 전사" onerror="this.src='https://placehold.co/100x100/4f4c7a/ecf0f1?text=Warrior'">
-                         <p>남자 전사</p>
-                     </div>
+                       <div class="char-card" data-class="전사" data-gender="남">
+                           <img src="https://raw.githubusercontent.com/dessa1995/crime/main/mw.png" alt="남자 전사" onerror="this.src='https://placehold.co/100x100/4f4c7a/ecf0f1?text=Warrior'">
+                           <p>남자 전사</p>
+                       </div>
                     <div class="char-card" data-class="전사" data-gender="여">
                         <img src="https://raw.githubusercontent.com/dessa1995/crime/main/fw.png" alt="여자 전사" onerror="this.src='https://placehold.co/100x100/4f4c7a/ecf0f1?text=Warrior'">
                         <p>여자 전사</p>
@@ -1113,7 +1113,7 @@
         }
         
         // ==================================================================
-        // 게임 로직
+        // 게임 로직 (수정됨)
         // ==================================================================
         function startNewGame() {
             resetGameState();
@@ -1254,7 +1254,8 @@
         function startQuiz() {
             gameState.questionsAttempted++;
             updateStatus();
-            let quizDifficulty;
+            let
+                quizDifficulty;
 
             if (gameState.difficulty === '도전자') {
                 const rand = Math.random();
@@ -1372,6 +1373,8 @@
 
             lockInput();
             gameState.hasUsedUltimate = true;
+            // 궁극기 사용 시에는 '푼 문제' 카운트를 올리지 않기 위해 1 감소
+            gameState.questionsAttempted--; 
             updateStatus();
             showQuizContainer(false);
             monsterInfoDisplay.style.display = 'none';
@@ -1383,7 +1386,8 @@
                 showTemporaryMessage("궁극의 기술로 몬스터를 물리쳤다!", 1500, () => {
                     const quiz = gameState.currentQuiz;
                     const explanationText = `<b>[문제: ${quiz.case}]</b><br><br><b>정답 해설:</b><br>${quiz.explanation || "해설 정보가 없습니다."}`;
-                    showMessage(explanationText, prepareNextEncounter);
+                    // 궁극기 후에는 문제 카운트를 올리지 않는 startDungeonAnimation을 직접 호출
+                    showMessage(explanationText, startDungeonAnimation);
                 });
             });
         }
@@ -1431,6 +1435,8 @@
             showQuizContainer(false);
             monsterInfoDisplay.style.display = 'none';
             gameState.lives--;
+            // 오답 시에는 '푼 문제'를 다시 1 감소시켜 원상복구
+            gameState.questionsAttempted--;
             updateStatus();
             
             startAnimation('monster-attack', 1200, () => {
@@ -1446,7 +1452,8 @@
                                startGameOverAnimation();
                            }
                         } else {
-                            startDungeonAnimation();
+                            // 오답 후에는 새로운 몬스터를 생성하지 않고, 같은 몬스터에게 다시 도전
+                            startQuiz(); 
                         }
                     };
                     showMessage(explanationText, nextAction);
@@ -2005,36 +2012,30 @@
                             effectParticles.push({ type: 'lightning', x: startX, y: startY, tx: endX, ty: endY, life: 0.5, color: '#f1c40f' });
                         }
                     }
-                } else if (level === 4) { // Lv 4: 화염 운석 (개선)
-                    // 1. 작은 붉은 마법진
-                    drawMagicCircle(startX, startY, 50 * chargeProgress, '#e74c3c', `rgba(255, 100, 0, ${0.5 * chargeProgress})`);
-                    // 2. 메테오 발사
+                } else if (level === 4) { // Lv 4: 화염 운석 (요청사항 3 반영)
+                    drawMagicCircle(startX, startY, 70 * chargeProgress, '#e74c3c', `rgba(255, 100, 0, ${0.5 * chargeProgress})`);
                     if (progress > 0.5) {
-                        drawMeteorProjectile(projectileX, projectileY, 30);
+                        drawMeteorProjectile(projectileX, projectileY, 45); // 크기 증가
                     }
-                    // 3. 몬스터 적중 시 폭발
                     if (impactProgress > 0) {
-                        drawExplosion(endX, endY, 150 * impactProgress, '#ff4500', 'red');
+                        drawExplosion(endX, endY, 250 * impactProgress, '#ff4500', 'red'); // 폭발 크기 증가
                     }
-                } else { // Lv 5: 원소 폭발 (개선)
+                } else { // Lv 5: 원소 폭발 (요청사항 3 반영)
                     const colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71'];
-                    // 1. 작은 모든 원소색 마법진
-                    drawMagicCircle(startX, startY, 60 * chargeProgress, 'white', `rgba(255, 255, 255, ${0.3 * chargeProgress})`, colors);
-                    // 2. 모든 원소 발사
+                    drawMagicCircle(startX, startY, 80 * chargeProgress, 'white', `rgba(255, 255, 255, ${0.3 * chargeProgress})`, colors);
                     if (progress > 0.5) {
                         colors.forEach((color, i) => {
                             const angle = (i / colors.length) * Math.PI * 2 + progress * 10;
-                            const orbitX = projectileX + Math.cos(angle) * 30;
-                            const orbitY = projectileY + Math.sin(angle) * 30;
-                            drawElementProjectile(orbitX, orbitY, 15, color);
+                            const orbitX = projectileX + Math.cos(angle) * 40; // 궤도 증가
+                            const orbitY = projectileY + Math.sin(angle) * 40; // 궤도 증가
+                            drawElementProjectile(orbitX, orbitY, 25, color); // 크기 증가
                         });
                     }
-                    // 3. 몬스터 적중 시 각각 폭발
                     if (impactProgress > 0) {
                         colors.forEach(color => {
-                            const offsetX = (Math.random() - 0.5) * 80;
-                            const offsetY = (Math.random() - 0.5) * 80;
-                            drawExplosion(endX + offsetX, endY + offsetY, 100 * impactProgress, color, color);
+                            const offsetX = (Math.random() - 0.5) * 120; // 폭발 범위 증가
+                            const offsetY = (Math.random() - 0.5) * 120; // 폭발 범위 증가
+                            drawExplosion(endX + offsetX, endY + offsetY, 180 * impactProgress, color, color); // 폭발 크기 증가
                         });
                     }
                 }
@@ -2194,7 +2195,11 @@
                 
                 // Screen shake
                 const shake = 30 * shockwaveAlpha;
-                canvas.style.transform = `translate(${Math.random() * shake - shake/2}px, ${Math.random() * shake - shake/2}px)`;
+                if (shockwaveAlpha > 0.01) {
+                    canvas.style.transform = `translate(${Math.random() * shake - shake/2}px, ${Math.random() * shake - shake/2}px)`;
+                } else {
+                    canvas.style.transform = 'none';
+                }
             }
         }
 
@@ -2399,6 +2404,7 @@
         function drawGrandElemental(progress) {
             const chargeProgress = Math.min(1, progress / 0.5);
             const rainProgress = Math.max(0, (progress - 0.4) / 0.6);
+            const impactProgress = Math.max(0, (progress - 0.85) / 0.15);
             const colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71']; // 불, 냉기, 번개, 바람
 
             // 1. 모든 원소 색의 마법진
@@ -2411,6 +2417,18 @@
                 const endX = Math.random() * canvas.width;
                 const duration = Math.random() * 0.4 + 0.2;
                 effectParticles.push({ type: 'elemental_rain', elementType: type, sx: startX, sy: -100, ex: endX, ey: canvas.height * 0.8, life: duration, maxLife: duration, size: Math.random() * 30 + 20 });
+            }
+
+            // 3. 최종 거대 폭발 (요청사항 4 반영)
+            if(impactProgress > 0) {
+                const finalExplosionRadius = canvas.width * 1.5 * impactProgress;
+                const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, finalExplosionRadius);
+                grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                grad.addColorStop(0.1, 'rgba(255, 255, 255, 0.8)');
+                grad.addColorStop(0.4, 'rgba(155, 89, 182, 0.5)');
+                grad.addColorStop(1, 'rgba(155, 89, 182, 0)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0,0, canvas.width, canvas.height);
             }
         }
 
@@ -2486,7 +2504,7 @@
                     p.y = p.sy + (p.ey - p.sy) * p_life;
                     if (p.life < 0.1) {
                         p.life = 0;
-                        drawExplosion(p.x, p.y, 150, '#ff4500', 'red');
+                        drawExplosion(p.x, p.y, 250, '#ff4500', 'red'); // 크기 증가
                     }
                     drawMeteorProjectile(p.x, p.y, p.size);
                 } else if (p.type === 'elemental_rain') {
@@ -2495,7 +2513,7 @@
                     p.y = p.sy + (p.ey - p.sy) * p_life;
                     if (p.life < 0.1) {
                         p.life = 0;
-                        drawExplosion(p.x, p.y, 100, p.elementType, p.elementType);
+                        drawExplosion(p.x, p.y, 180, p.elementType, p.elementType); // 크기 증가
                     }
                     drawElementProjectile(p.x, p.y, p.size, p.elementType);
                 } else if (p.type === 'falling_weapon') {
@@ -2635,7 +2653,7 @@
         }
         
         // ==================================================================
-        // 메인 게임 루프
+        // 메인 게임 루프 (수정됨)
         // ==================================================================
         let lastTime = 0;
         function gameLoop(timestamp) {
@@ -2652,6 +2670,8 @@
                 gameState.animation.progress += deltaTime;
                 if (gameState.animation.progress >= gameState.animation.duration) {
                     const onEndCallback = gameState.animation.onEnd;
+                    // 버그 수정 1: 애니메이션이 끝나면 항상 transform을 리셋
+                    canvas.style.transform = 'none'; 
                     gameState.animation = { type: null, duration: 0, progress: 0, onEnd: null, data: {} };
                     if (onEndCallback) onEndCallback();
                 }
