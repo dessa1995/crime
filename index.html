@@ -582,6 +582,15 @@
             z-index: 120;
         }
 
+        #failsafe-container {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            z-index: 120;
+            display: none;
+        }
+
+
         /* Responsive Design */
         @media (max-width: 600px) {
             #start-screen h1 { font-size: 2.8em; }
@@ -795,6 +804,10 @@
         <div id="fixed-buttons-container">
             <button id="instructions-btn" class="btn btn-small">게임 설명</button>
         </div>
+        
+        <div id="failsafe-container">
+            <button id="force-continue-btn" class="btn btn-small btn-danger">게임 멈춤? (클릭)</button>
+        </div>
 
         <audio id="bgm-audio" src="https://raw.githubusercontent.com/dessa1995/crime/main/bbgm.mp3" loop></audio>
 
@@ -820,6 +833,7 @@
         const bgmAudioElement = document.getElementById('bgm-audio');
         const progressDisplay = document.getElementById('progress-display');
         const ultimateSkillBtn = document.getElementById('ultimate-skill-btn');
+        const failsafeContainer = document.getElementById('failsafe-container');
 
         const assets = {
             monsters: {
@@ -840,11 +854,30 @@
         };
         const loadedImages = {};
 
+        // 스킬 이름 변경: 더 직관적이고 화려하게
+        const skillNames = {
+            '전사': {
+                1: "강타",
+                2: "이중 베기",
+                3: "검무",
+                4: "십자 가르기",
+                5: "멸망의 심판"
+            },
+            '마법사': {
+                1: "얼음의 비",
+                2: "회오리치는 폭풍",
+                3: "연쇄 번개",
+                4: "유성우",
+                5: "원소의 격류"
+            }
+        };
+
         let gameState = {};
         let effectParticles = [];
         let backgroundParticles = [];
         let gameOverDebris = [];
         let isInputLocked = false;
+        let animationFrameId;
 
         // 퀴즈 데이터 (기존과 동일)
         const quizzes = [
@@ -963,11 +996,12 @@
              gameState = {
                   player: { name: '', class: '', gender: '', level: 1, imageKey: '' },
                   difficulty: null, lives: 5, monstersDefeated: 0,
-                  currentMonster: null, currentQuiz: null, usedQuizIds: [],
+                  currentMonster: { type: null, imageKey: null, x: 0, y: 0, hitProgress: 0, alpha: 1 },
+                  currentQuiz: null, usedQuizIds: [],
                   clearedStages: { '하': false, '중': false, '상': false },
                   isBossFight: false, bossStage: 0,
                   currentScreen: 'start-screen',
-                  animation: { type: null, progress: 0, duration: 0, shake: 0, monsterXOffset: 0, playerShake: {x: 0, y: 0} },
+                  animation: { type: null, progress: 0, duration: 0, onEnd: null, data: {} },
                   questionsAttempted: 0,
                   questionsCorrect: 0,
                   isSkippable: false,
@@ -975,7 +1009,7 @@
                   skippableTimeoutId: null,
                   isChallengeUnlocked: false,
                   score: 0,
-                  hasUsedUltimate: false // 궁극기 사용 여부
+                  hasUsedUltimate: false
              };
              gameOverDebris = [];
              backgroundParticles = [];
@@ -987,6 +1021,13 @@
             screens.forEach(screen => screen.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
             gameState.currentScreen = screenId;
+
+            failsafeContainer.style.display = (screenId === 'game-screen') ? 'block' : 'none';
+            
+            if (screenId !== 'game-screen' && animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
         }
 
         // 에셋 로딩
@@ -1030,6 +1071,18 @@
                     });
                 }
             }
+        }
+        
+        // --- 애니메이션 및 상태 관리 개선 ---
+        function startAnimation(type, duration, onEnd, data = {}) {
+            gameState.animation = { type, duration, progress: 0, onEnd, data };
+        }
+
+        function clearAnimation() {
+            if (gameState.animation && typeof gameState.animation.onEnd === 'function') {
+                gameState.animation.onEnd();
+            }
+            gameState.animation = { type: null, duration: 0, progress: 0, onEnd: null, data: {} };
         }
 
         // 게임 로직
@@ -1084,7 +1137,7 @@
             gameState.bossStage = 0;
             gameState.questionsAttempted = 0;
             gameState.questionsCorrect = 0;
-            gameState.hasUsedUltimate = false; // 던전 시작 시 궁극기 초기화
+            gameState.hasUsedUltimate = false;
 
             if (difficulty === '상') {
                 gameState.lives = 3;
@@ -1102,22 +1155,19 @@
 
         function startDungeonAnimation() {
             showScreen('game-screen');
-            backgroundParticles = []; // 배경 파티클 초기화
-            gameState.animation = { type: 'dungeon-intro', progress: 0, duration: 2000, shake: 0, monsterXOffset: 0, playerShake: {x:0, y:0} };
-            gameLoop();
+            if (!animationFrameId) {
+                gameLoop();
+            }
+            backgroundParticles = [];
             
-            const callback = () => {
-                if (gameState.animation.type === 'dungeon-intro') {
-                    gameState.animation.type = null;
-                    if (!gameState.isBossFight) {
-                        showTemporaryMessage("몬스터가 등장했습니다.", 1000, spawnMonster);
-                    } else {
-                        spawnMonster();
-                    }
-                }
+            const onIntroEnd = () => {
+                const message = gameState.isBossFight ? "보스가 등장했다!" : "몬스터가 등장했습니다.";
+                showTemporaryMessage(message, 1000, spawnMonster);
             };
             
-            makeEventSkippable(callback, 2000);
+            startAnimation('dungeon-intro', 2000, onIntroEnd);
+            
+            makeEventSkippable(onIntroEnd, 2000);
         }
         
         function makeEventSkippable(callback, duration) {
@@ -1129,6 +1179,7 @@
                     clearTimeout(gameState.skippableTimeoutId);
                     gameState.skippableTimeoutId = null;
                     gameState.onSkip = null;
+                    clearAnimation();
                     callback();
                 }
             };
@@ -1140,7 +1191,7 @@
 
         function skipCurrentEvent() {
             if (isInputLocked) return;
-            if (gameState.animation.type === 'dungeon-intro' && gameState.isSkippable && typeof gameState.onSkip === 'function') {
+            if (gameState.isSkippable && typeof gameState.onSkip === 'function') {
                 gameState.onSkip();
             }
         }
@@ -1167,7 +1218,7 @@
                 }
             }
             
-            gameState.currentMonster = { type: monsterType, imageKey: monsterType };
+            gameState.currentMonster = { type: monsterType, imageKey: monsterType, hitProgress: 0, alpha: 1 };
             startQuiz();
         }
 
@@ -1282,7 +1333,7 @@
             }
         }
         
-        function handleUltimateSkill() {
+        async function handleUltimateSkill() {
             if (isInputLocked || gameState.hasUsedUltimate) return;
 
             if (gameState.isBossFight && gameState.difficulty !== '도전자') {
@@ -1292,22 +1343,21 @@
 
             lockInput();
             gameState.hasUsedUltimate = true;
-            updateStatus(); // 버튼 비활성화
+            updateStatus();
             quizContainer.style.display = 'none';
             monsterInfoDisplay.style.display = 'none';
+            
+            const skillName = skillNames[gameState.player.class][gameState.player.level];
+            await showTemporaryMessage(skillName, 1500);
 
-            gameState.animation = { type: 'ultimate-attack', progress: 0, duration: 4000, shake: 20, monsterXOffset: 0, playerShake: {x:0, y:0} };
-            effectParticles = [];
-
-            setTimeout(() => {
+            startAnimation('ultimate-attack', 4000, () => {
                 showTemporaryMessage("궁극의 기술로 몬스터를 물리쳤다!", 1500, () => {
                     const quiz = gameState.currentQuiz;
-                    const explanationText = `<b>문제 해설:</b><br>${quiz.explanation || "해설 정보가 없습니다."}`;
+                    const explanationText = `<b>[문제: ${quiz.case}]</b><br><br><b>정답 해설:</b><br>${quiz.explanation || "해설 정보가 없습니다."}`;
                     showMessage(explanationText, prepareNextEncounter);
                 });
-            }, gameState.animation.duration);
+            });
         }
-
 
         function handleCorrectAnswer() {
            if (gameState.difficulty === '도전자') {
@@ -1322,81 +1372,80 @@
             updateStatus();
             quizContainer.style.display = 'none';
             monsterInfoDisplay.style.display = 'none';
-            gameState.animation = { type: 'attack', progress: 0, duration: 1500, shake: 0, monsterXOffset: 0, playerShake: {x:0, y:0} };
-            effectParticles = [];
-
-            const nextAction = () => {
-                if (gameState.isBossFight) {
-                    handleStageClear();
-                } else {
-                    prepareNextEncounter();
-                }
-            };
-
-            let message = "몬스터를 물리쳤다!";
-            if(gameState.isBossFight) {
-                if (gameState.difficulty === '하' || gameState.difficulty === '중') {
-                    message = "대단하군 용사여.. 두고보자!";
-                } else if (gameState.difficulty === '상') {
-                    if (gameState.bossStage === 0) {
-                        gameState.bossStage = 1;
-                        showTemporaryMessage("아직 쓰러지지 않는다. 다시 덤비거라 용사여!", 1500, spawnMonster);
-                        return; // Exit here to prevent calling nextAction
-                    } else {
-                        message = "정말 대단하구나... 나의 패배를 인정한다...";
+            
+            startAnimation('attack', 1500, () => {
+                let message = "몬스터를 물리쳤다!";
+                if(gameState.isBossFight) {
+                    if (gameState.difficulty === '하' || gameState.difficulty === '중') {
+                        message = "대단하군 용사여.. 두고보자!";
+                    } else if (gameState.difficulty === '상') {
+                        if (gameState.bossStage === 0) {
+                            gameState.bossStage = 1;
+                            showTemporaryMessage("아직 쓰러지지 않는다. 다시 덤비거라 용사여!", 1500, spawnMonster);
+                            return;
+                        } else {
+                            message = "정말 대단하구나... 나의 패배를 인정한다...";
+                        }
                     }
                 }
-            }
-            showTemporaryMessage(message, 1500, nextAction);
+                showTemporaryMessage(message, 1500, () => {
+                    if (gameState.isBossFight) {
+                        handleStageClear();
+                    } else {
+                        prepareNextEncounter();
+                    }
+                });
+            });
         }
         
         function handleIncorrectAnswer() {
             quizContainer.style.display = 'none';
             monsterInfoDisplay.style.display = 'none';
-            gameState.animation = { type: 'player-damage', progress: 0, duration: 1200, shake: 0, monsterXOffset: 0, playerShake: {x:0, y:0} };
             gameState.lives--;
             updateStatus();
-
-            showTemporaryMessage("몬스터의 공격을 막지 못했다!", 1200);
-
-            const quiz = gameState.currentQuiz;
-            let explanationText = `<b>오답입니다!</b><br><br><b>정답 해설:</b><br>${quiz.explanation || "해설 정보가 없습니다."}`;
-
-            const nextAction = () => {
-                if (gameState.lives <= 0) {
-                   if (gameState.difficulty === '도전자') {
-                       showChallengeResult();
-                   } else {
-                        startGameOverAnimation();
-                   }
-                } else {
-                    startDungeonAnimation();
-                }
-            };
-
-            setTimeout(() => showMessage(explanationText, nextAction), 1200);
+            
+            startAnimation('monster-attack', 1200, () => {
+                showTemporaryMessage("몬스터의 공격을 막지 못했다!", 1200, () => {
+                    const quiz = gameState.currentQuiz;
+                    let explanationText = `<b>오답입니다!</b><br><br><b>정답 해설:</b><br>${quiz.explanation || "해설 정보가 없습니다."}`;
+                    
+                    const nextAction = () => {
+                        if (gameState.lives <= 0) {
+                           if (gameState.difficulty === '도전자') {
+                               showChallengeResult();
+                           } else {
+                               startGameOverAnimation();
+                           }
+                        } else {
+                            startDungeonAnimation();
+                        }
+                    };
+                    showMessage(explanationText, nextAction);
+                });
+            });
         }
 
         function startGameOverAnimation() {
             gameOverDebris = [];
             for(let i=0; i<50; i++) {
                 gameOverDebris.push({
-                    x: Math.random() * canvas.width,
-                    y: -Math.random() * canvas.height,
-                    width: Math.random() * 40 + 20,
-                    height: Math.random() * 30 + 15,
-                    vx: (Math.random() - 0.5) * 5,
-                    vy: Math.random() * 5 + 2,
-                    rotation: 0,
-                    vr: (Math.random() - 0.5) * 0.1,
+                    x: Math.random() * canvas.width, y: -Math.random() * canvas.height,
+                    width: Math.random() * 40 + 20, height: Math.random() * 30 + 15,
+                    vx: (Math.random() - 0.5) * 5, vy: Math.random() * 5 + 2,
+                    rotation: 0, vr: (Math.random() - 0.5) * 0.1,
                     color: `rgb(${100 + Math.random()*30}, ${90 + Math.random()*30}, ${90 + Math.random()*30})`
                 });
             }
-            gameState.animation = { type: 'game-over', progress: 0, duration: 2500, shake: 15, monsterXOffset: 0, playerShake: {x:0, y:0} };
-            setTimeout(() => showMessage("GAME OVER", () => setupDifficultyScreen()), 2500);
+            startAnimation('game-over', 2500, () => {
+                showMessage("GAME OVER", setupDifficultyScreen);
+            });
         }
         
         function prepareNextEncounter() {
+            // Ensure no lingering animations or locks
+            clearAnimation();
+            unlockInput();
+
             if (gameState.difficulty !== '도전자' && Math.random() < 0.3) {
                 if (gameState.difficulty === '상') gameState.lives = Math.min(3, gameState.lives + 1);
                 else gameState.lives = Math.min(5, gameState.lives + 1);
@@ -1415,7 +1464,7 @@
             if (bossConditionMet) {
                 gameState.isBossFight = true;
                 gameState.bossStage = 0;
-                showTemporaryMessage("보스가 등장했다!", 1000, startDungeonAnimation);
+                startDungeonAnimation();
             } else {
                 startDungeonAnimation();
             }
@@ -1427,7 +1476,6 @@
                gameState.player.level++;
             }
             
-            gameState.animation = { type: 'game-clear', progress: 0, duration: 3000, shake: 0, monsterXOffset: 0, playerShake: {x:0, y:0} };
             effectParticles = [];
             for (let i = 0; i < 150; i++) {
                 effectParticles.push({
@@ -1438,20 +1486,19 @@
                 });
             }
             
-            setTimeout(() => {
-               if (gameState.clearedStages['하'] && gameState.clearedStages['중'] && gameState.clearedStages['상']) {
-                   gameState.isChallengeUnlocked = true;
-                   gameState.player.level = 4;
-                   startGrandFinale();
-               } else {
+            startAnimation('game-clear', 3000, () => {
+                if (gameState.clearedStages['하'] && gameState.clearedStages['중'] && gameState.clearedStages['상']) {
+                    gameState.isChallengeUnlocked = true;
+                    gameState.player.level = 4;
+                    startGrandFinale();
+                } else {
                     saveGame(false);
                     showMessage(`난이도 '${gameState.difficulty}' 클리어!<br>레벨 업! (현재 LV.${gameState.player.level})`, setupDifficultyScreen);
-               }
-            }, 3000);
+                }
+            });
         }
 
         function startGrandFinale() {
-            gameState.animation = { type: 'grand-finale', progress: 0, duration: 6000, shake: 0, monsterXOffset: 0, playerShake: {x:0, y:0} };
             effectParticles = [];
             for (let i = 0; i < 200; i++) {
                 effectParticles.push({
@@ -1461,12 +1508,10 @@
                     rotation: Math.random() * 360, life: 1
                 });
             }
-            gameLoop();
-            
-            setTimeout(() => {
+            startAnimation('grand-finale', 6000, () => {
                 saveGame(false);
                 showMessage("지식의 서를 얻고 세상의 모든 지식을 손에 넣었습니다. 축하합니다!", setupDifficultyScreen);
-            }, 6000);
+            });
         }
 
         function showChallengeResult() {
@@ -1492,11 +1537,7 @@
             document.getElementById('status-level').textContent = gameState.player.level;
             document.getElementById('status-lives').textContent = '❤️'.repeat(gameState.lives);
             
-            if (gameState.hasUsedUltimate) {
-                ultimateSkillBtn.classList.add('disabled');
-            } else {
-                ultimateSkillBtn.classList.remove('disabled');
-            }
+            ultimateSkillBtn.classList.toggle('disabled', gameState.hasUsedUltimate);
             
             updateProgressDisplay();
         }
@@ -1537,15 +1578,18 @@
         }
         
         function showTemporaryMessage(text, duration, callback) {
-            lockInput();
-            tempMessageOverlay.textContent = text;
-            tempMessageOverlay.classList.add('visible');
-            
-            setTimeout(() => {
-                tempMessageOverlay.classList.remove('visible');
-                unlockInput();
-                if (callback) callback();
-            }, duration);
+            return new Promise(resolve => {
+                lockInput();
+                tempMessageOverlay.textContent = text;
+                tempMessageOverlay.classList.add('visible');
+                
+                setTimeout(() => {
+                    tempMessageOverlay.classList.remove('visible');
+                    unlockInput();
+                    if (callback) callback();
+                    resolve();
+                }, duration);
+            });
         }
 
         function saveGame(showAlert = true) {
@@ -1599,7 +1643,6 @@
             const isBoss = gameState.isBossFight;
             let grad1 = '#2c2a4a', grad2 = '#1a1832', wall = '#33304a';
 
-            // 난이도별 색상 및 배경 요소 변경
             if (isBoss || difficulty === '도전자') {
                 grad1 = '#4d1a1a'; grad2 = '#2e0e0e'; wall = '#3d1a1a';
             } else if (difficulty === '상') {
@@ -1608,7 +1651,6 @@
                 grad1 = '#3a3a4a'; grad2 = '#2a2a3b'; wall = '#303040';
             }
             
-            // 배경 그라데이션
             const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
             bgGrad.addColorStop(0, grad1);
             bgGrad.addColorStop(0.6, grad2);
@@ -1616,49 +1658,84 @@
             ctx.fillStyle = bgGrad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // 난이도별 동적 효과 추가
             if (difficulty === '중' || difficulty === '상' || isBoss || difficulty === '도전자') {
-                 if (Math.random() < 0.05) { // 먼지 파티클
-                    backgroundParticles.push({ type: 'dust', x: Math.random() * canvas.width, y: 0, vx: (Math.random() - 0.5) * 0.5, vy: Math.random() * 0.5 + 0.2, life: 1, size: Math.random() * 2 + 1 });
+                 if (Math.random() < 0.05) {
+                   backgroundParticles.push({ type: 'dust', x: Math.random() * canvas.width, y: 0, vx: (Math.random() - 0.5) * 0.5, vy: Math.random() * 0.5 + 0.2, life: 1, size: Math.random() * 2 + 1 });
                  }
             }
             if (difficulty === '상' || isBoss || difficulty === '도전자') {
-                 if (Math.random() < 0.03) { // 유령 형상
-                    backgroundParticles.push({ type: 'ghost', x: Math.random() * canvas.width, y: Math.random() * canvas.height * 0.6, life: 1, opacity: 0, maxOpacity: Math.random() * 0.2 + 0.1 });
+                 if (Math.random() < 0.03) {
+                   backgroundParticles.push({ type: 'ghost', x: Math.random() * canvas.width, y: Math.random() * canvas.height * 0.6, life: 1, opacity: 0, maxOpacity: Math.random() * 0.2 + 0.1 });
                  }
             }
             if (isBoss || difficulty === '도전자') {
-                 if (Math.random() < 0.3) { // 용암 거품
-                    backgroundParticles.push({ type: 'lava_bubble', x: Math.random() * canvas.width, y: canvas.height, radius: Math.random() * 20 + 5, life: 1, speed: Math.random() * 1 + 0.5 });
+                 if (Math.random() < 0.3) {
+                   backgroundParticles.push({ type: 'lava_bubble', x: Math.random() * canvas.width, y: canvas.height, radius: Math.random() * 20 + 5, life: 1, speed: Math.random() * 1 + 0.5 });
                  }
-                 if (Math.random() < 0.1) { // 불꽃 파티클
-                    backgroundParticles.push({ type: 'ember', x: Math.random() * canvas.width, y: canvas.height, vx: (Math.random() - 0.5), vy: -(Math.random() * 3 + 2), life: 1, size: Math.random() * 3 + 1 });
+                 if (Math.random() < 0.1) {
+                   backgroundParticles.push({ type: 'ember', x: Math.random() * canvas.width, y: canvas.height, vx: (Math.random() - 0.5), vy: -(Math.random() * 3 + 2), life: 1, size: Math.random() * 3 + 1 });
                  }
             }
 
-            // 배경 파티클 업데이트 및 그리기
             updateAndDrawBackgroundParticles(deltaTime);
 
-            // 벽돌 패턴
             ctx.strokeStyle = wall;
             ctx.lineWidth = 2;
             ctx.globalAlpha = 0.3;
-            for(let y = 0; y < canvas.height * 0.6; y += 40) {
+            for(let y = 0; y < canvas.height; y += 40) {
                 for(let x = (y/40 % 2) * -20; x < canvas.width; x += 40) {
                     ctx.strokeRect(x, y, 40, 40);
                 }
             }
             ctx.globalAlpha = 1.0;
-
-            // 바닥
-            ctx.fillStyle = grad2;
-            ctx.fillRect(0, canvas.height * 0.6, canvas.width, canvas.height * 0.4);
             
-            // 보스/도전자 모드 용암
+            drawPlatforms();
+
             if (isBoss || difficulty === '도전자') {
                 drawLava(deltaTime);
             }
         }
+        
+        function drawPlatforms() {
+            const platformHeight = canvas.height * 0.8;
+            const platformThickness = 40;
+            
+            // Draw Player Platform
+            const pPlatformWidth = canvas.width * 0.4;
+            const pPlatformX = canvas.width * 0.1;
+            drawStonePlatform(pPlatformX, platformHeight, pPlatformWidth, platformThickness);
+
+            // Draw Monster Platform
+            const mPlatformWidth = canvas.width * 0.4;
+            const mPlatformX = canvas.width * 0.9 - mPlatformWidth;
+            drawStonePlatform(mPlatformX, platformHeight, mPlatformWidth, platformThickness);
+        }
+
+        function drawStonePlatform(x, y, width, height) {
+            // Main platform color
+            ctx.fillStyle = '#4a4a5a';
+            ctx.fillRect(x, y, width, height);
+            
+            // Top highlight
+            ctx.fillStyle = '#6b6b7b';
+            ctx.fillRect(x, y, width, 5);
+
+            // Front face with cracks
+            ctx.fillStyle = '#3a3a4a';
+            ctx.fillRect(x, y + 5, width, height - 5);
+            
+            ctx.strokeStyle = '#2a2a3a';
+            ctx.lineWidth = 2;
+            for(let i = 0; i < width / 50; i++) {
+                const crackX = x + Math.random() * width;
+                const crackY = y + 5 + Math.random() * (height - 10);
+                ctx.beginPath();
+                ctx.moveTo(crackX, crackY);
+                ctx.lineTo(crackX + (Math.random() - 0.5) * 20, crackY + (Math.random() - 0.5) * 20);
+                ctx.stroke();
+            }
+        }
+
 
         function updateAndDrawBackgroundParticles(deltaTime) {
             backgroundParticles.forEach((p, i) => {
@@ -1681,7 +1758,7 @@
                 } else if (p.type === 'lava_bubble') {
                     p.y -= p.speed;
                     p.radius *= 0.99;
-                    if (p.y < canvas.height * 0.6) p.life = 0;
+                    if (p.y < canvas.height * 0.8) p.life = 0;
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                     ctx.fillStyle = `rgba(255, 255, 0, ${p.life * 0.7})`;
@@ -1697,7 +1774,7 @@
         }
 
         function drawLava(deltaTime) {
-            const lavaY = canvas.height * 0.6;
+            const lavaY = canvas.height * 0.8;
             const grad = ctx.createLinearGradient(0, lavaY, 0, canvas.height);
             grad.addColorStop(0, '#ff8c00');
             grad.addColorStop(0.5, '#ff4500');
@@ -1719,50 +1796,78 @@
             const img = loadedImages[gameState.player.imageKey];
             if (!img) return;
 
+            const anim = gameState.animation;
             let size = Math.min(canvas.width, canvas.height) * 0.25;
             let yOffset = bobbing ? Math.sin(Date.now() / 200) * 5 : 0;
-            let xPos = canvas.width * 0.2 + gameState.animation.playerShake.x;
-            let yPos = canvas.height * 0.6 - size + gameState.animation.playerShake.y;
+            let xPos = canvas.width * 0.25 - size / 2;
+            let yPos = canvas.height * 0.8 - size;
+            let alpha = 1.0;
             
-            if (gameState.animation.type === 'grand-finale') {
+            if (anim.type === 'monster-attack') {
+                const progress = anim.progress / anim.duration;
+                if (progress > 0.4 && progress < 0.7) { // Impact window
+                    const shakeProgress = Math.sin((progress - 0.4) / 0.3 * Math.PI);
+                    xPos += (Math.random() - 0.5) * 20 * shakeProgress;
+                    yPos += (Math.random() - 0.5) * 10 * shakeProgress;
+                }
+            } else if (anim.type === 'grand-finale') {
                size = Math.min(canvas.width, canvas.height) * 0.35;
                xPos = canvas.width / 2 - size / 2;
-               yPos = canvas.height * 0.4 - size;
+               yPos = canvas.height * 0.5 - size;
                yOffset += Math.abs(Math.sin(Date.now() / 200) * -15);
             }
             
+            ctx.save();
+            ctx.globalAlpha = alpha;
             ctx.drawImage(img, xPos, yPos + yOffset, size, size);
+            ctx.restore();
         }
 
         function drawMonster() {
-            if (gameState.currentMonster) {
+            if (gameState.currentMonster && gameState.currentMonster.imageKey) {
                 const img = loadedImages[gameState.currentMonster.imageKey];
                 if (img) {
+                    const anim = gameState.animation;
+                    const monster = gameState.currentMonster;
                     const size = Math.min(canvas.width, canvas.height) * 0.3;
-                    let x = canvas.width * 0.8 - size + gameState.animation.monsterXOffset;
-                    let y = canvas.height * 0.6 - size;
+                    let x = canvas.width * 0.75 - size / 2;
+                    let y = canvas.height * 0.8 - size;
                     
-                    if (gameState.animation.type === 'attack' || gameState.animation.type === 'ultimate-attack') {
-                        const progress = gameState.animation.progress / gameState.animation.duration;
-                        x += Math.sin(progress * Math.PI * 20) * 15;
-                        y += Math.sin(progress * Math.PI * 22) * 10;
+                    if (anim.type === 'attack' || anim.type === 'ultimate-attack') {
+                        const progress = anim.progress / anim.duration;
+                        const shakeProgress = Math.sin(progress * Math.PI);
+                        x += (Math.random() - 0.5) * 15 * shakeProgress;
+                        y += (Math.random() - 0.5) * 15 * shakeProgress;
+                    } else if (anim.type === 'monster-attack') {
+                        const progress = anim.progress / anim.duration;
+                        // Lunge forward and back
+                        const lungeProgress = Math.sin(progress * Math.PI);
+                        x -= lungeProgress * 100;
                     }
-
+                    
+                    ctx.save();
+                    ctx.globalAlpha = monster.alpha;
                     ctx.drawImage(img, x, y, size, size);
+                    ctx.restore();
                 }
             }
         }
         
         function drawEffects(deltaTime) {
-            // 일반 공격 이펙트
             if (gameState.animation.type === 'attack') {
                 drawNormalAttack();
             }
-            // 궁극기 이펙트
             else if (gameState.animation.type === 'ultimate-attack') {
                 drawUltimateAttack();
             }
-            // 스테이지 클리어 이펙트
+            else if (gameState.animation.type === 'monster-attack') {
+                const progress = gameState.animation.progress / gameState.animation.duration;
+                if (progress > 0.4 && progress < 0.7) {
+                    const playerX = canvas.width * 0.25;
+                    const playerY = canvas.height * 0.8 - (Math.min(canvas.width, canvas.height) * 0.25) / 2;
+                    drawImpactEffect(playerX, playerY, progress);
+                }
+            }
             else if (gameState.animation.type === 'grand-finale' || gameState.animation.type === 'game-clear') {
                 drawConfetti(deltaTime);
                 if(gameState.animation.type === 'grand-finale') {
@@ -1771,16 +1876,33 @@
                 }
             }
             
-            // 기타 파티클 업데이트 (번개 등)
             updateAndDrawMiscParticles(deltaTime);
+        }
+
+        function drawImpactEffect(x, y, progress) {
+            const p = Math.sin((progress - 0.4) / 0.3 * Math.PI);
+            const size = 150 * p;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.strokeStyle = `rgba(255, 220, 0, ${1-p})`;
+            ctx.lineWidth = 10 * (1-p);
+            for(let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(angle) * size, Math.sin(angle) * size);
+                ctx.stroke();
+            }
+            ctx.restore();
         }
 
         function drawNormalAttack() {
             const progress = Math.min(1, gameState.animation.progress / gameState.animation.duration);
             const level = gameState.player.level;
             const startX = canvas.width * 0.35;
-            const startY = canvas.height * 0.45;
+            const startY = canvas.height * 0.65;
             const endX = canvas.width * 0.7;
+            const endY = canvas.height * 0.65;
             const easeOutProgress = 1 - Math.pow(1 - progress, 4);
             const travelX = startX + (endX - startX) * easeOutProgress;
             const alpha = Math.sin(progress * Math.PI);
@@ -1804,96 +1926,90 @@
                     drawSharpSlash(0, 0, 300, 150, p_cross, 'red', 'white', 60, 20, -45);
                     ctx.restore();
                 } else { // Level 5
-                    const p_ultimate = Math.sin(progress * Math.PI);
-                    ctx.fillStyle = `rgba(255, 20, 20, ${p_ultimate * 0.2})`;
-                    ctx.shadowColor = 'red'; ctx.shadowBlur = 100;
-                    ctx.beginPath(); ctx.arc(endX, startY, 300 * p_ultimate, 0, Math.PI * 2); ctx.fill();
-                    if (progress > 0.1 && Math.random() > 0.2) {
-                        effectParticles.push({ type: 'lightning', x: endX + (Math.random()-0.5)*300, y: startY + (Math.random()-0.5)*300, tx: endX, ty: startY, life: 0.2, color: 'red' });
+                    const p = Math.sin(progress * Math.PI);
+                    ctx.save();
+                    ctx.translate(endX, startY);
+                    ctx.shadowColor = '#e74c3c';
+                    ctx.shadowBlur = 40 * p;
+                    drawSharpSlash(0, 0, 400 * p, 200 * p, 1, '#2c3e50', '#e74c3c', 20, 25, 15);
+                    drawSharpSlash(0, 0, 350 * p, 180 * p, 1, '#bdc3c7', '#e74c3c', 10, 15, 15);
+                    ctx.restore();
+                    if(progress > 0.2 && progress < 0.8) {
+                        const shake = 20 * p;
+                        canvas.style.transform = `translate(${Math.random() * shake - shake/2}px, ${Math.random() * shake - shake/2}px)`;
+                    } else {
+                        canvas.style.transform = 'none';
                     }
                 }
             } else if (gameState.player.class === '마법사') {
                 const currentX = startX + (endX - startX) * progress;
                 const currentY = startY;
-                if (level <= 1) {
+                if (level <= 1) { // Magic Missile
                     ctx.fillStyle = `rgba(173, 216, 230, ${1 - progress})`;
                     ctx.shadowColor = 'cyan'; ctx.shadowBlur = 15;
                     ctx.beginPath(); ctx.arc(currentX, currentY, 20, 0, Math.PI * 2); ctx.fill();
-                } else if (level === 2) {
+                } else if (level === 2) { // Ice Bolt
+                     if (Math.random() > 0.3) {
+                        effectParticles.push({ type: 'ice_shard', x: currentX, y: currentY, vx: 20, vy: (Math.random()-0.5)*5, life: 0.5, size: 25 });
+                    }
+                } else if (level === 3) { // Chain Lightning
                     if (progress > 0.1 && progress < 0.9 && Math.random() > 0.5) {
-                        effectParticles.push({ type: 'lightning', x: startX, y: startY, tx: endX, ty: startY, life: 0.5, color: 'cyan' });
+                        effectParticles.push({ type: 'lightning', x: startX, y: startY, tx: endX, ty: endY, life: 0.5, color: '#f1c40f' });
                     }
-                } else if (level === 3) {
-                    if (progress > 0.1 && progress < 0.9 && Math.random() > 0.3) {
-                        const angle = Math.random() * Math.PI * 2;
-                        effectParticles.push({ type: 'ice_shard', x: endX, y: startY, vx: Math.cos(angle) * 15, vy: Math.sin(angle) * 15, life: 1, size: 20 });
-                    }
-                } else if (level === 4) {
-                    const p_ultimate = Math.sin(progress * Math.PI);
-                    ctx.fillStyle = `rgba(255, 215, 0, ${p_ultimate * 0.2})`;
-                    ctx.shadowColor = 'gold'; ctx.shadowBlur = 50;
-                    ctx.beginPath(); ctx.arc(endX, startY, 200 * p_ultimate, 0, Math.PI * 2); ctx.fill();
-                } else { // Level 5
-                    const p_ultimate = Math.sin(progress * Math.PI);
-                    ctx.fillStyle = `rgba(150, 0, 255, ${p_ultimate * 0.3})`;
-                    ctx.shadowColor = 'purple'; ctx.shadowBlur = 150;
-                    ctx.beginPath(); ctx.arc(endX, startY, 400 * p_ultimate, 0, Math.PI * 2); ctx.fill();
-                    if (progress > 0.1 && Math.random() > 0.1) {
-                        effectParticles.push({ type: 'dark_energy', x: endX, y: startY, vx: (Math.random()-0.5)*30, vy: (Math.random()-0.5)*30, life: 1, size: 30 });
-                    }
+                } else if (level === 4) { // Small Meteor
+                    const p = Math.pow(progress, 2);
+                    const meteorX = startX + (endX - startX) * p;
+                    const meteorY = startY - 200 * (1-p);
+                    ctx.fillStyle = '#ff4500';
+                    ctx.shadowColor = 'red'; ctx.shadowBlur = 30;
+                    ctx.beginPath(); ctx.arc(meteorX, meteorY, 30, 0, Math.PI * 2); ctx.fill();
+                } else { // Level 5 Elemental Orbs
+                    const p = progress * Math.PI * 2;
+                    // Fire
+                    ctx.fillStyle = 'orange'; ctx.shadowColor = 'red'; ctx.shadowBlur = 10;
+                    ctx.beginPath(); ctx.arc(currentX + Math.cos(p) * 40, currentY + Math.sin(p) * 40, 15, 0, 2*Math.PI); ctx.fill();
+                    // Ice
+                    ctx.fillStyle = 'cyan'; ctx.shadowColor = 'white'; ctx.shadowBlur = 10;
+                    ctx.beginPath(); ctx.arc(currentX + Math.cos(p + 2.1) * 40, currentY + Math.sin(p + 2.1) * 40, 15, 0, 2*Math.PI); ctx.fill();
+                    // Lightning
+                    ctx.fillStyle = 'yellow'; ctx.shadowColor = 'white'; ctx.shadowBlur = 10;
+                    ctx.beginPath(); ctx.arc(currentX + Math.cos(p + 4.2) * 40, currentY + Math.sin(p + 4.2) * 40, 15, 0, 2*Math.PI); ctx.fill();
                 }
             }
             ctx.shadowBlur = 0;
+            if (progress >= 1) canvas.style.transform = 'none'; // Reset screenshake
         }
 
         function drawUltimateAttack() {
             const progress = Math.min(1, gameState.animation.progress / gameState.animation.duration);
             const level = gameState.player.level;
 
-            // 배경 어둡게
             ctx.fillStyle = `rgba(0,0,0, ${0.8 * Math.sin(progress * Math.PI)})`;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (gameState.player.class === '전사') {
-                // 레벨별 전사 궁극기
-                if (level === 1) {
-                    if (progress > 0.1 && progress < 0.8) drawRandomSlash(1);
-                } else if (level === 2) {
-                    if (progress > 0.1 && progress < 0.8) { drawRandomSlash(2); drawRandomSlash(1, '#ffdd00'); }
-                } else if (level === 3) {
-                    if (progress > 0.1 && progress < 0.9) { drawRandomSlash(3); drawRandomSlash(2, '#ff8800'); }
-                    if (progress > 0.8) drawFinalSlash(progress, '#ff4400', 100);
-                } else if (level === 4) {
-                    if (progress > 0.1 && progress < 0.9) { drawRandomSlash(4, 'cyan'); drawRandomSlash(3, 'white'); }
-                    if (progress > 0.7) drawFinalSlash(progress, 'cyan', 150);
-                } else { // Level 5
-                    if (progress > 0.1 && progress < 0.95) { drawRandomSlash(6, 'red'); drawRandomSlash(5, 'white'); }
-                    if (progress > 0.6) drawFinalSlash(progress, 'red', 250, true);
-                }
+                if (level === 1) { if (progress > 0.1 && progress < 0.8) drawRandomSlash(2, 180); if (progress > 0.8) drawFinalSlash(progress, '#aaa', 200); }
+                else if (level === 2) { if (progress > 0.1 && progress < 0.8) { drawRandomSlash(3, 220); drawRandomSlash(2, 180, '#ffdd00'); } if (progress > 0.8) drawFinalSlash(progress, '#ffdd00', 250); }
+                else if (level === 3) { if (progress > 0.1 && progress < 0.9) { drawRandomSlash(4, 250); drawRandomSlash(3, 220, '#ff8800'); } if (progress > 0.7) drawFinalSlash(progress, '#ff4400', 350); }
+                else if (level === 4) { if (progress > 0.1 && progress < 0.9) { drawRandomSlash(5, 300, 'cyan'); drawRandomSlash(4, 250, 'white'); } if (progress > 0.7) drawFinalSlash(progress, 'cyan', 450, true); }
+                else { if (progress > 0.1 && progress < 0.95) { drawRandomSlash(8, 400, '#e74c3c'); drawRandomSlash(7, 350, 'white'); } if (progress > 0.6) drawFinalSlash(progress, '#e74c3c', 600, true); }
             } else if (gameState.player.class === '마법사') {
-                // 레벨별 마법사 궁극기
-                if (level === 1) { // 번개
-                    if (Math.random() < progress * 0.5) effectParticles.push({ type: 'lightning', x: Math.random() * canvas.width, y: 0, tx: Math.random() * canvas.width, ty: canvas.height, life: 0.3, color: 'white' });
-                } else if (level === 2) { // 얼음 비
-                    if (Math.random() < progress) effectParticles.push({ type: 'ice_rain', x: Math.random() * canvas.width, y: -20, life: 1, speed: Math.random() * 10 + 10 });
-                } else if (level === 3) { // 폭풍
-                    drawTornado(progress);
-                } else if (level === 4) { // 메테오
-                    drawMeteor(progress);
-                } else { // Level 5: 블랙홀
-                    drawBlackhole(progress);
-                }
+                if (level === 1) { drawIceRain(progress); }
+                else if (level === 2) { drawTornado(progress); }
+                else if (level === 3) { drawMultiLightning(progress); }
+                else if (level === 4) { drawMeteorShower(progress); }
+                else { drawGrandElemental(progress); }
             }
         }
 
-        function drawRandomSlash(count, color = 'white') {
+        function drawRandomSlash(count, length = 200, color = 'white') {
             for (let i = 0; i < count; i++) {
-                if (Math.random() > 0.8) {
+                if (Math.random() > 0.7) {
                     const x = Math.random() * canvas.width;
                     const y = Math.random() * canvas.height;
                     const angle = Math.random() * 360;
-                    const length = Math.random() * 200 + 100;
-                    drawSharpSlash(x, y, length, length/2, 1, color, color, 20, 10, angle);
+                    const l = Math.random() * (length * 0.5) + (length * 0.5);
+                    drawSharpSlash(x, y, l, l/2, 1, color, color, 20, 10, angle);
                 }
             }
         }
@@ -1904,417 +2020,422 @@
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
             if (hasAura) {
-                ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.3})`;
-                ctx.shadowColor = color;
-                ctx.shadowBlur = 100;
-                ctx.beginPath();
-                ctx.arc(0, 0, size * 2 * alpha, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            drawSharpSlash(0, 0, size * 2.5, size, alpha, color, 'white', 50, 30, 45);
-            drawSharpSlash(0, 0, size * 2.5, size, alpha, 'white', color, 50, 15, 45);
-            ctx.restore();
-        }
+                const auraSize = size * 1.2 * alpha;
+                const grad = ctx.createRadialGradient(0, 0, auraSize * 0.2, 0, 0, auraSize);
+                grad.addColorStop
+grad.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.8})`);
+                grad.addColorStop(0.5, `rgba(255, 255, 200, ${alpha * 0.5})`);
+                grad.addColorStop(1, `rgba(255, 100, 100, 0)`);
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(0, 0, auraSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            const finalSlashSize = size * Math.min(1, p * 2);
+            drawSharpSlash(0, 0, finalSlashSize * 1.5, finalSlashSize * 0.75, alpha, color, 'white', 50, 40, 45);
+            drawSharpSlash(0, 0, finalSlashSize * 1.5, finalSlashSize * 0.75, alpha, 'white', color, 50, 25, -45);
+            ctx.restore();
+        }
 
-        function drawTornado(progress) {
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height;
-            const p = Math.sin(progress * Math.PI);
-            for(let i=0; i<50; i++) {
-                const angle = (Date.now() / 10 + i * 20) * 0.1;
-                const radius = (1 - (i/50)) * canvas.width * 0.4 * p;
-                const x = centerX + Math.cos(angle) * radius;
-                const y = centerY - (i/50) * canvas.height * 1.2;
-                ctx.fillStyle = `rgba(200, 220, 230, ${Math.random() * 0.5 * p})`;
-                ctx.beginPath();
-                ctx.arc(x, y, i/2, 0, Math.PI*2);
-                ctx.fill();
-            }
-        }
-        
-        function drawMeteor(progress) {
-            const p = Math.pow(progress, 2);
-            const startX = canvas.width;
-            const startY = -100;
-            const endX = canvas.width * 0.7;
-            const endY = canvas.height * 0.4;
-            const currentX = startX - (startX - endX) * p;
-            const currentY = startY - (startY - endY) * p;
+        function drawIceRain(progress) {
+            if (Math.random() < progress * 2) {
+                const x = Math.random() * canvas.width;
+                const life = Math.random() * 0.5 + 0.5;
+                effectParticles.push({ type: 'ice_rain', x: x, y: -40, life: life, speed: Math.random() * 15 + 15, size: Math.random() * 30 + 20 });
+            }
+        }
 
-            if (progress < 0.9) {
-                // 꼬리
-                for(let i=0; i<20; i++) {
-                    ctx.fillStyle = `rgba(255, ${100 + Math.random()*100}, 0, ${Math.random() * 0.5})`;
-                    ctx.beginPath();
-                    ctx.arc(currentX + (Math.random()-0.5)*80, currentY + (Math.random()-0.5)*80, Math.random() * 30, 0, Math.PI*2);
-                    ctx.fill();
-                }
-                // 핵
-                ctx.fillStyle = '#ff4500';
-                ctx.shadowColor = 'red'; ctx.shadowBlur = 50;
-                ctx.beginPath();
-                ctx.arc(currentX, currentY, 50, 0, Math.PI*2);
-                ctx.fill();
-            } else {
-                // 폭발
-                const explosionP = (progress - 0.9) / 0.1;
-                ctx.fillStyle = `rgba(255, 200, 0, ${1 - explosionP})`;
-                ctx.beginPath();
-                ctx.arc(endX, endY, 500 * explosionP, 0, Math.PI*2);
-                ctx.fill();
-            }
-        }
-        
-        function drawBlackhole(progress) {
-            const centerX = canvas.width * 0.7;
-            const centerY = canvas.height * 0.4;
-            const p = Math.sin(progress * Math.PI);
-            
-            // 블랙홀
-            ctx.fillStyle = 'black';
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 150 * p, 0, Math.PI * 2);
-            ctx.fill();
+        function drawTornado(progress) {
+            const centerX = canvas.width / 2 + Math.sin(progress * Math.PI * 4) * 80;
+            const p = Math.sin(progress * Math.PI);
+            for(let i=0; i<120; i++) {
+                const angle = (Date.now() / 8 + i * 25) * 0.1;
+                const radius = (1 - (i/120)) * canvas.width * 0.5 * p * (1 + Math.sin(progress * Math.PI * 2) * 0.1);
+                const x = centerX + Math.cos(angle) * radius;
+                const y = canvas.height - (i/120) * canvas.height * 1.3;
+                ctx.fillStyle = `rgba(200, 220, 230, ${Math.random() * 0.4 * p})`;
+                ctx.beginPath();
+                ctx.arc(x, y, i/1.5, 0, Math.PI*2);
+                ctx.fill();
+            }
+            if (Math.random() < p) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * canvas.width * 0.7 + canvas.width * 0.3;
+                effectParticles.push({ type: 'sucked_particle', x: centerX + Math.cos(angle) * radius, y: Math.random() * canvas.height, life: 1, targetX: centerX, targetY: canvas.height / 2 });
+            }
+        }
 
-            // 중력 렌즈 효과
-            ctx.save();
-            ctx.strokeStyle = `rgba(150, 50, 255, ${p * 0.8})`;
-            ctx.lineWidth = 10;
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 160 * p, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.restore();
+        function drawMultiLightning(progress) {
+            if (Math.random() < progress * 3) {
+                const startX = Math.random() * canvas.width;
+                const endX = canvas.width * 0.75 - 100 + Math.random() * 200;
+                const endY = canvas.height * 0.8 - 100 + Math.random() * 100;
+                effectParticles.push({ type: 'lightning', x: startX, y: 0, tx: endX, ty: endY, life: 0.4, color: '#f1c40f' });
+            }
+        }
 
-            // 파티클 흡수
-            if (Math.random() < progress) {
-                const angle = Math.random() * Math.PI * 2;
-                const radius = Math.random() * canvas.width;
-                effectParticles.push({
-                    type: 'sucked_particle',
-                    x: centerX + Math.cos(angle) * radius,
-                    y: centerY + Math.sin(angle) * radius,
-                    life: 1,
-                    targetX: centerX,
-                    targetY: centerY
-                });
-            }
-        }
+        function drawMeteorShower(progress) {
+            if (Math.random() < progress * 4) {
+                const startX = Math.random() * canvas.width * 2 - canvas.width * 0.5;
+                const endX = Math.random() * canvas.width;
+                const duration = Math.random() * 0.5 + 0.5;
+                effectParticles.push({ type: 'meteor', sx: startX, sy: -100, ex: endX, ey: canvas.height * 0.8, life: duration, maxLife: duration, size: Math.random() * 40 + 20 });
+            }
+        }
+        
+        function drawGrandElemental(progress) {
+            const p = Math.sin(progress * Math.PI);
+            const centerX = canvas.width * 0.7;
+            const centerY = canvas.height * 0.6;
+
+            // Background aura
+            const grad = ctx.createRadialGradient(centerX, centerY, 100 * p, centerX, centerY, 500 * p);
+            grad.addColorStop(0, `rgba(255, 255, 255, ${p * 0.5})`);
+            grad.addColorStop(1, `rgba(128, 0, 128, 0)`);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (Math.random() < progress * 2) {
+                // Fire
+                effectParticles.push({ type: 'ember', x: centerX, y: centerY, vx: (Math.random() - 0.5) * 15, vy: (Math.random() - 0.5) * 15, life: 1, size: Math.random() * 5 + 3 });
+                // Ice
+                effectParticles.push({ type: 'ice_shard', x: centerX, y: centerY, vx: (Math.random() - 0.5) * 15, vy: (Math.random() - 0.5) * 15, life: 1, size: 20 });
+                // Lightning
+                if (Math.random() < 0.3) {
+                    effectParticles.push({ type: 'lightning', x: centerX, y: centerY, tx: centerX + (Math.random() - 0.5) * 400, ty: centerY + (Math.random() - 0.5) * 400, life: 0.3, color: 'yellow' });
+                }
+            }
+        }
 
 
-        function drawConfetti(deltaTime) {
-             effectParticles.forEach((p, index) => {
-                p.life -= deltaTime / 3000;
-                if (p.life <= 0) { effectParticles.splice(index, 1); return; }
-                
-                p.x += p.vx * (deltaTime / 16); p.y += p.vy * (deltaTime / 16);
-                p.vy += 0.1 * (deltaTime / 16); // gravity
-                
-                ctx.save();
-                ctx.globalAlpha = p.life > 0 ? p.life : 0;
-                ctx.translate(p.x, p.y);
-                ctx.fillStyle = p.color;
-                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-                ctx.restore();
-             });
-        }
-        
-        function updateAndDrawMiscParticles(deltaTime) {
-            effectParticles.forEach((p, index) => {
-                p.life -= deltaTime / 1000;
-                if (p.life <= 0) { effectParticles.splice(index, 1); return; }
-                
-                ctx.save();
-                ctx.globalAlpha = p.life > 0 ? p.life : 0;
-                
-                if (p.type === 'lightning') {
-                    ctx.strokeStyle = p.color || `hsl(${200 + Math.random()*100}, 100%, ${70 + Math.random()*30}%)`;
-                    ctx.lineWidth = Math.random() * 5 + 2;
-                    ctx.shadowColor = p.color || '#9b59b6'; ctx.shadowBlur = 20;
-                    ctx.beginPath(); ctx.moveTo(p.x, p.y);
-                    for(let i=1; i<=5; i++) {
-                        const nx = p.x + (p.tx-p.x) * (i/5) + (Math.random()-0.5)*40;
-                        const ny = p.y + (p.ty-p.y) * (i/5) + (Math.random()-0.5)*40;
-                        ctx.lineTo(nx, ny);
-                    }
-                    ctx.stroke();
-                } else if (p.type === 'ice_shard' || p.type === 'ice_rain') {
-                    p.x += p.vx || 0; p.y += p.vy || p.speed;
-                    ctx.fillStyle = 'rgba(173, 216, 230, 0.8)';
-                    ctx.strokeStyle = 'white'; ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(p.x - p.size/2, p.y + p.size);
-                    ctx.lineTo(p.x + p.size/2, p.y + p.size);
-                    ctx.closePath();
-                    ctx.fill(); ctx.stroke();
-                } else if (p.type === 'dark_energy') {
-                    p.x += p.vx; p.y += p.vy;
-                    ctx.fillStyle = `hsl(${280 + Math.random()*40}, 100%, 50%)`;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); ctx.fill();
-                } else if (p.type === 'sucked_particle') {
-                    p.x += (p.targetX - p.x) * 0.1;
-                    p.y += (p.targetY - p.y) * 0.1;
-                    const dist = Math.hypot(p.x - p.targetX, p.y - p.targetY);
-                    if (dist < 20) p.life = 0;
-                    ctx.fillStyle = `rgba(255, 255, 255, ${p.life * 0.7})`;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
-                }
+        function drawConfetti(deltaTime) {
+             effectParticles.forEach((p, index) => {
+                p.life -= deltaTime / 3000;
+                if (p.life <= 0) { effectParticles.splice(index, 1); return; }
+                
+                p.x += p.vx * (deltaTime / 16); p.y += p.vy * (deltaTime / 16);
+                p.vy += 0.1 * (deltaTime / 16);
+                
+                ctx.save();
+                ctx.globalAlpha = p.life > 0 ? p.life : 0;
+                ctx.translate(p.x, p.y);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                ctx.restore();
+             });
+        }
+        
+        function updateAndDrawMiscParticles(deltaTime) {
+            effectParticles.forEach((p, index) => {
+                p.life -= deltaTime / 1000;
+                if (p.life <= 0) { effectParticles.splice(index, 1); return; }
+                
+                ctx.save();
+                ctx.globalAlpha = p.life > 0 ? p.life : 0;
+                
+                if (p.type === 'lightning') {
+                    ctx.strokeStyle = p.color || `hsl(${200 + Math.random()*100}, 100%, ${70 + Math.random()*30}%)`;
+                    ctx.lineWidth = Math.random() * 5 + 2;
+                    ctx.shadowColor = p.color || '#9b59b6'; ctx.shadowBlur = 20;
+                    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+                    for(let i=1; i<=5; i++) {
+                        const nx = p.x + (p.tx-p.x) * (i/5) + (Math.random()-0.5)*40;
+                        const ny = p.y + (p.ty-p.y) * (i/5) + (Math.random()-0.5)*40;
+                        ctx.lineTo(nx, ny);
+                    }
+                    ctx.stroke();
+                } else if (p.type === 'ice_shard' || p.type === 'ice_rain') {
+                    p.x += (p.vx || 0) * (deltaTime/16); p.y += (p.vy || p.speed) * (deltaTime/16);
+                    if (p.type === 'ice_rain' && p.y > canvas.height * 0.8) {
+                        p.life = 0;
+                        for(let i=0; i<8; i++) effectParticles.push({ type: 'frost', x: p.x, y: p.y, life: 0.8, vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4 });
+                    }
+                    ctx.fillStyle = 'rgba(173, 216, 230, 0.9)';
+                    ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
+                    ctx.shadowColor = 'cyan'; ctx.shadowBlur = 15;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y); ctx.lineTo(p.x - p.size/2, p.y + p.size); ctx.lineTo(p.x + p.size/2, p.y + p.size);
+                    ctx.closePath();
+                    ctx.fill(); ctx.stroke();
+                } else if (p.type === 'frost') {
+                    p.x += p.vx; p.y += p.vy;
+                    ctx.fillStyle = `rgba(200, 230, 255, ${p.life * 0.7})`;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill();
+                } else if (p.type === 'dark_energy') {
+                    p.x += p.vx; p.y += p.vy;
+                    ctx.fillStyle = `hsl(${280 + Math.random()*40}, 100%, 50%)`;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); ctx.fill();
+                } else if (p.type === 'sucked_particle') {
+                    p.x += (p.targetX - p.x) * 0.15;
+                    p.y += (p.targetY - p.y) * 0.15;
+                    const dist = Math.hypot(p.x - p.targetX, p.y - p.targetY);
+                    if (dist < 20) p.life = 0;
+                    ctx.fillStyle = `rgba(200, 180, 255, ${p.life * 0.7})`;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+                } else if (p.type === 'meteor') {
+                    const p_life = 1 - (p.life / p.maxLife);
+                    p.x = p.sx + (p.ex - p.sx) * p_life;
+                    p.y = p.sy + (p.ey - p.sy) * p_life;
+                    if (p.life < 0.1) {
+                        p.life = 0;
+                        for(let i=0; i<10; i++) effectParticles.push({ type: 'ember', x: p.x, y: p.y, vx: (Math.random()-0.5)*8, vy: (Math.random()-0.8)*8, life: 0.5, size: Math.random() * 4 + 2 });
+                    }
+                    ctx.fillStyle = '#ff4500';
+                    ctx.shadowColor = 'red'; ctx.shadowBlur = p.size;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2); ctx.fill();
+                }
 
-                ctx.restore();
-            });
-            ctx.shadowBlur = 0;
-        }
+                ctx.restore();
+            });
+            ctx.shadowBlur = 0;
+        }
 
-        function drawSharpSlash(x, y, height, width, alpha, color, shadowColor, shadowBlur, lineWidth, angle = 0) {
-            ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.strokeStyle = color;
-            ctx.lineWidth = lineWidth;
-            ctx.shadowColor = shadowColor;
-            ctx.shadowBlur = shadowBlur;
-            ctx.translate(x, y);
-            ctx.rotate(angle * Math.PI / 180);
-            ctx.beginPath();
-            ctx.moveTo(0, -height / 2);
-            ctx.bezierCurveTo(width * 0.8, -height * 0.2, width * 0.8, height * 0.2, 0, height / 2);
-            ctx.stroke();
-            ctx.restore();
-        }
+        function drawSharpSlash(x, y, height, width, alpha, color, shadowColor, shadowBlur, lineWidth, angle = 0) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.shadowColor = shadowColor;
+            ctx.shadowBlur = shadowBlur;
+            ctx.translate(x, y);
+            ctx.rotate(angle * Math.PI / 180);
+            ctx.beginPath();
+            ctx.moveTo(0, -height / 2);
+            ctx.bezierCurveTo(width * 0.8, -height * 0.2, width * 0.8, height * 0.2, 0, height / 2);
+            ctx.stroke();
+            ctx.restore();
+        }
 
-        function drawBowingMonsters() {
-            const monsterKeys = ['하', '중', '상', '보스'];
-            monsterKeys.forEach((key, index) => {
-                const img = loadedImages[key];
-                if (!img) return;
-                const size = canvas.width * 0.15;
-                const x = canvas.width * (0.15 + index * 0.22);
-                const y = canvas.height * 0.7 - size;
-                ctx.save();
-                ctx.translate(x + size / 2, y + size);
-                const bowAngle = 0.4 + Math.sin(Date.now() / 500 + index) * 0.1;
-                ctx.rotate(bowAngle);
-                ctx.drawImage(img, -size / 2, -size, size, size);
-                ctx.restore();
-            });
-        }
+        function drawBowingMonsters() {
+            const monsterKeys = ['하', '중', '상', '보스'];
+            monsterKeys.forEach((key, index) => {
+                const img = loadedImages[key];
+                if (!img) return;
+                const size = canvas.width * 0.15;
+                const x = canvas.width * (0.15 + index * 0.22);
+                const y = canvas.height * 0.85 - size;
+                ctx.save();
+                ctx.translate(x + size / 2, y + size);
+                const bowAngle = 0.4 + Math.sin(Date.now() / 500 + index) * 0.1;
+                ctx.rotate(bowAngle);
+                ctx.drawImage(img, -size / 2, -size, size, size);
+                ctx.restore();
+            });
+        }
 
-        function drawKnowledgeBook() {
-            const img = loadedImages['book'];
-            if (!img) return;
-            const progress = Math.min(1, gameState.animation.progress / 4000);
-            const size = canvas.width * 0.25 * progress;
-            const x = canvas.width / 2 - size / 2;
-            const y = canvas.height * 0.5 - size / 2 + Math.sin(progress * Math.PI * 2) * 10;
-            ctx.save();
-            ctx.globalAlpha = progress;
-            ctx.shadowColor = 'gold';
-            ctx.shadowBlur = 30 * progress;
-            ctx.drawImage(img, x, y, size, size);
-            ctx.restore();
-        }
+        function drawKnowledgeBook() {
+            const img = loadedImages['book'];
+            if (!img) return;
+            const progress = Math.min(1, gameState.animation.progress / 4000);
+            const size = canvas.width * 0.25 * progress;
+            const x = canvas.width / 2 - size / 2;
+            const y = canvas.height * 0.5 - size / 2 + Math.sin(progress * Math.PI * 2) * 10;
+            ctx.save();
+            ctx.globalAlpha = progress;
+            ctx.shadowColor = 'gold';
+            ctx.shadowBlur = 30 * progress;
+            ctx.drawImage(img, x, y, size, size);
+            ctx.restore();
+        }
 
-        function drawGameOverAnimation(deltaTime) {
-            const gravity = 0.5;
-            gameOverDebris.forEach(p => {
-                p.vy += gravity * (deltaTime / 16);
-                p.x += p.vx * (deltaTime / 16);
-                p.y += p.vy * (deltaTime / 16);
-                p.rotation += p.vr * (deltaTime / 16);
-                
-                ctx.save();
-                ctx.translate(p.x + p.width/2, p.y + p.height/2);
-                ctx.rotate(p.rotation);
-                ctx.fillStyle = p.color;
-                ctx.fillRect(-p.width/2, -p.height/2, p.width, p.height);
-                ctx.strokeStyle = '#2c2a4a';
-                ctx.strokeRect(-p.width/2, -p.height/2, p.width, p.height);
-                ctx.restore();
-            });
-        }
+        function drawGameOverAnimation(deltaTime) {
+            const gravity = 0.5;
+            gameOverDebris.forEach(p => {
+                p.vy += gravity * (deltaTime / 16);
+                p.x += p.vx * (deltaTime / 16);
+                p.y += p.vy * (deltaTime / 16);
+                p.rotation += p.vr * (deltaTime / 16);
+                
+                ctx.save();
+                ctx.translate(p.x + p.width/2, p.y + p.height/2);
+                ctx.rotate(p.rotation);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.width/2, -p.height/2, p.width, p.height);
+                ctx.strokeStyle = '#2c2a4a';
+                ctx.strokeRect(-p.width/2, -p.height/2, p.width, p.height);
+                ctx.restore();
+            });
+        }
 
-        let lastTime = 0;
-        function gameLoop(timestamp) {
-            if (gameState.currentScreen !== 'game-screen') return;
+        let lastTime = 0;
+        function gameLoop(timestamp) {
+            if (!gameState || gameState.currentScreen !== 'game-screen') {
+                animationFrameId = null;
+                return;
+            }
+            animationFrameId = requestAnimationFrame(gameLoop);
 
-            const deltaTime = (timestamp - lastTime) || 16;
-            lastTime = timestamp;
+            const deltaTime = (timestamp - lastTime) || 16.6;
+            lastTime = timestamp;
 
-            // Update animations
-            if (gameState.animation.type) {
-                gameState.animation.progress += deltaTime;
-                const progress = gameState.animation.progress / gameState.animation.duration;
+            if (gameState.animation.type) {
+                gameState.animation.progress += deltaTime;
+                if (gameState.animation.progress >= gameState.animation.duration) {
+                    const onEndCallback = gameState.animation.onEnd;
+                    gameState.animation = { type: null, duration: 0, progress: 0, onEnd: null, data: {} };
+                    if (onEndCallback) onEndCallback();
+                }
+            }
 
-                if (gameState.animation.type === 'player-damage') {
-                    const rushProgress = Math.sin(Math.min(1, progress) * Math.PI);
-                    gameState.animation.monsterXOffset = -canvas.width * 0.3 * rushProgress;
-                    gameState.animation.playerShake.x = (Math.random() - 0.5) * 15 * rushProgress;
-                } else {
-                    gameState.animation.monsterXOffset = 0;
-                    gameState.animation.playerShake.x = 0;
-                }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawDungeonBackground(deltaTime);
+            
+            if (gameState.animation.type === 'dungeon-intro' || gameState.animation.type === 'grand-finale') {
+                drawCharacter(true);
+            } else {
+                drawCharacter(false);
+                if (gameState.animation.type !== 'game-over' && gameState.animation.type !== 'grand-finale') {
+                    drawMonster();
+                }
+            }
+            
+            drawEffects(deltaTime);
 
-                if (gameState.animation.progress >= gameState.animation.duration) {
-                    if(gameState.animation.type !== 'game-over' && gameState.animation.type !== 'game-clear' && gameState.animation.type !== 'grand-finale' && gameState.animation.type !== 'ultimate-attack') {
-                        gameState.animation.type = null;
-                    }
-                }
-            }
+            if (gameState.animation.type === 'game-over') {
+                drawGameOverAnimation(deltaTime);
+            }
+        }
 
-            ctx.save();
-            if(gameState.animation.shake > 0) {
-                const shakeProgress = gameState.animation.progress / gameState.animation.duration;
-                const shakeAmount = gameState.animation.shake * (1 - shakeProgress);
-                if(shakeAmount > 0) {
-                    ctx.translate(Math.random() * shakeAmount - shakeAmount/2, Math.random() * shakeAmount - shakeAmount/2);
-                }
-            }
+        // 이벤트 리스너 설정
+        window.addEventListener('load', async () => {
+            await loadAssets();
+            initGame();
+            resizeCanvas();
+        });
+        
+        window.addEventListener('resize', resizeCanvas);
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawDungeonBackground(deltaTime);
-            
-            if (gameState.animation.type === 'dungeon-intro' || gameState.animation.type === 'grand-finale') {
-                drawCharacter(true);
-            } else {
-                drawCharacter(false);
-                if (gameState.animation.type !== 'game-over' && gameState.animation.type !== 'grand-finale') {
-                    drawMonster();
-                }
-            }
-            
-            drawEffects(deltaTime);
+        document.getElementById('game-screen').addEventListener('click', (e) => {
+            if (e.target.id === 'game-canvas') {
+                skipCurrentEvent();
+            }
+        });
 
-            if (gameState.animation.type === 'game-over') {
-                drawGameOverAnimation(deltaTime);
-            }
+        document.getElementById('story-screen').addEventListener('click', () => {
+            showScreen('start-screen');
+        });
 
-            ctx.restore();
+        document.getElementById('start-new-game-btn').addEventListener('click', () => {
+            initAndPlayBGM();
+            startNewGame();
+        });
+        document.getElementById('load-game-btn').addEventListener('click', () => {
+            initAndPlayBGM();
+            loadGame();
+        });
+        document.getElementById('save-game-btn').addEventListener('click', () => saveGame(true));
+        
+        document.getElementById('change-character-btn').addEventListener('click', () => {
+            showScreen('character-selection-screen');
+        });
+        
+        document.getElementById('restart-from-scratch-btn').addEventListener('click', () => {
+            localStorage.removeItem('crimeQuizRPGSave');
+            startNewGame();
+        });
 
-            requestAnimationFrame(gameLoop);
-        }
+        document.getElementById('back-to-difficulty-btn').addEventListener('click', () => {
+            saveGame(false);
+            setupDifficultyScreen();
+        });
 
-        // 이벤트 리스너 설정
-        window.addEventListener('load', async () => {
-            await loadAssets();
-            initGame();
-            resizeCanvas();
-        });
-        
-        window.addEventListener('resize', resizeCanvas);
+        document.querySelectorAll('#character-selection-screen .char-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('#character-selection-screen .char-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+            });
+        });
 
-        document.getElementById('game-screen').addEventListener('click', (e) => {
-            if (e.target.id === 'game-canvas') {
-                skipCurrentEvent();
-            }
-        });
+        document.getElementById('confirm-character-btn').addEventListener('click', () => {
+            const name = document.getElementById('character-name').value.trim();
+            const selected = document.querySelector('#character-selection-screen .char-card.selected');
+            if (!name) { showMessage("캐릭터 이름을 입력해주세요."); return; }
+            if (!selected) { showMessage("캐릭터를 선택해주세요."); return; }
+            
+            const level = gameState.player.level || 1;
+            const clearedStages = gameState.clearedStages || { '하': false, '중': false, '상': false };
+            const isChallengeUnlocked = gameState.isChallengeUnlocked || false;
 
-        document.getElementById('story-screen').addEventListener('click', () => {
-            showScreen('start-screen');
-        });
+            gameState.player.name = name;
+            gameState.player.class = selected.dataset.class;
+            gameState.player.gender = selected.dataset.gender;
+            gameState.player.imageKey = `${gameState.player.class}_${gameState.player.gender}`;
+            gameState.player.level = level;
+            gameState.clearedStages = clearedStages;
+            gameState.isChallengeUnlocked = isChallengeUnlocked;
+            
+            setupDifficultyScreen();
+        });
+        
+        document.getElementById('difficulty-options').addEventListener('click', (e) => {
+           if (e.target.matches('.difficulty-btn') && !e.target.classList.contains('disabled')) {
+               startGame(e.target.dataset.difficulty);
+           }
+        });
+        
+        ultimateSkillBtn.addEventListener('click', handleUltimateSkill);
 
-        document.getElementById('start-new-game-btn').addEventListener('click', () => {
-            initAndPlayBGM();
-            startNewGame();
-        });
-        document.getElementById('load-game-btn').addEventListener('click', () => {
-            initAndPlayBGM();
-            loadGame();
-        });
-        document.getElementById('save-game-btn').addEventListener('click', () => saveGame(true));
-        
-        document.getElementById('change-character-btn').addEventListener('click', () => {
-            showScreen('character-selection-screen');
-        });
-        
-        document.getElementById('restart-from-scratch-btn').addEventListener('click', () => {
-            localStorage.removeItem('crimeQuizRPGSave');
-            startNewGame();
-        });
+        q1OptionsEl.addEventListener('click', (e) => {
+            if (e.target.matches('.quiz-btn')) handleQ1Answer(e.target.dataset.answer);
+        });
 
-        document.getElementById('back-to-difficulty-btn').addEventListener('click', () => {
-            saveGame(false);
-            setupDifficultyScreen();
-        });
+        q2OptionsEl.addEventListener('click', (e) => {
+            const target = e.target.closest('.q2-btn');
+            if (target) handleQ2Answer(target.dataset.answerIndex);
+        });
 
-        document.querySelectorAll('#character-selection-screen .char-card').forEach(card => {
-            card.addEventListener('click', () => {
-                document.querySelectorAll('#character-selection-screen .char-card').forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-            });
-        });
+        document.getElementById('instructions-btn').addEventListener('click', () => {
+            document.getElementById('instructions-modal').style.display = 'flex';
+        });
+        document.getElementById('instructions-close-btn').addEventListener('click', () => {
+            document.getElementById('instructions-modal').style.display = 'none';
+        });
 
-        document.getElementById('confirm-character-btn').addEventListener('click', () => {
-            const name = document.getElementById('character-name').value.trim();
-            const selected = document.querySelector('#character-selection-screen .char-card.selected');
-            if (!name) { showMessage("캐릭터 이름을 입력해주세요."); return; }
-            if (!selected) { showMessage("캐릭터를 선택해주세요."); return; }
-            
-            const level = gameState.player.level || 1;
-            const clearedStages = gameState.clearedStages || { '하': false, '중': false, '상': false };
-            const isChallengeUnlocked = gameState.isChallengeUnlocked || false;
+        const ingameCharChangeModal = document.getElementById('ingame-char-change-modal');
+        document.getElementById('ingame-change-char-btn').addEventListener('click', () => {
+            ingameCharChangeModal.style.display = 'flex';
+        });
+        document.getElementById('cancel-ingame-char-change-btn').addEventListener('click', () => {
+            ingameCharChangeModal.style.display = 'none';
+        });
+        ingameCharChangeModal.querySelectorAll('.char-card').forEach(card => {
+            card.addEventListener('click', () => {
+                ingameCharChangeModal.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+            });
+        });
+        document.getElementById('confirm-ingame-char-change-btn').addEventListener('click', () => {
+            const selected = ingameCharChangeModal.querySelector('.char-card.selected');
+            if(selected) {
+                gameState.player.class = selected.dataset.class;
+                gameState.player.gender = selected.dataset.gender;
+                gameState.player.imageKey = `${gameState.player.class}_${gameState.player.gender}`;
+                ingameCharChangeModal.style.display = 'none';
+                updateStatus();
+                unlockInput();
+            } else {
+                showMessage("변경할 캐릭터를 선택해주세요.");
+            }
+        });
+        
+        document.getElementById('force-continue-btn').addEventListener('click', () => {
+            console.warn("강제 진행 버튼 클릭됨.");
+            if (gameState.animation && typeof gameState.animation.onEnd === 'function') {
+                console.log("진행 중인 애니메이션의 콜백을 강제로 실행합니다.");
+                clearAnimation();
+            } else {
+                console.log("진행할 애니메이션 콜백이 없습니다. 다음 몬스터를 준비합니다.");
+                quizContainer.style.display = 'none';
+                monsterInfoDisplay.style.display = 'none';
+                if (gameState.lives > 0) {
+                    prepareNextEncounter();
+                } else {
+                    startGameOverAnimation();
+                }
+            }
+            unlockInput();
+        });
 
-            gameState.player.name = name;
-            gameState.player.class = selected.dataset.class;
-            gameState.player.gender = selected.dataset.gender;
-            gameState.player.imageKey = `${gameState.player.class}_${gameState.player.gender}`;
-            gameState.player.level = level;
-            gameState.clearedStages = clearedStages;
-            gameState.isChallengeUnlocked = isChallengeUnlocked;
-            
-            setupDifficultyScreen();
-        });
-        
-        document.getElementById('difficulty-options').addEventListener('click', (e) => {
-           if (e.target.matches('.difficulty-btn') && !e.target.classList.contains('disabled')) {
-               startGame(e.target.dataset.difficulty);
-           }
-        });
-        
-        ultimateSkillBtn.addEventListener('click', handleUltimateSkill);
-
-        q1OptionsEl.addEventListener('click', (e) => {
-            if (e.target.matches('.quiz-btn')) handleQ1Answer(e.target.dataset.answer);
-        });
-
-        q2OptionsEl.addEventListener('click', (e) => {
-            const target = e.target.closest('.q2-btn');
-            if (target) handleQ2Answer(target.dataset.answerIndex);
-        });
-
-        document.getElementById('instructions-btn').addEventListener('click', () => {
-            document.getElementById('instructions-modal').style.display = 'flex';
-        });
-        document.getElementById('instructions-close-btn').addEventListener('click', () => {
-            document.getElementById('instructions-modal').style.display = 'none';
-        });
-
-        // 인게임 캐릭터 변경 모달 리스너
-        const ingameCharChangeModal = document.getElementById('ingame-char-change-modal');
-        document.getElementById('ingame-change-char-btn').addEventListener('click', () => {
-            ingameCharChangeModal.style.display = 'flex';
-        });
-        document.getElementById('cancel-ingame-char-change-btn').addEventListener('click', () => {
-            ingameCharChangeModal.style.display = 'none';
-        });
-        ingameCharChangeModal.querySelectorAll('.char-card').forEach(card => {
-            card.addEventListener('click', () => {
-                ingameCharChangeModal.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-            });
-        });
-        document.getElementById('confirm-ingame-char-change-btn').addEventListener('click', () => {
-            const selected = ingameCharChangeModal.querySelector('.char-card.selected');
-            if(selected) {
-                gameState.player.class = selected.dataset.class;
-                gameState.player.gender = selected.dataset.gender;
-                gameState.player.imageKey = `${gameState.player.class}_${gameState.player.gender}`;
-                ingameCharChangeModal.style.display = 'none';
-                updateStatus();
-                unlockInput();
-            } else {
-                showMessage("변경할 캐릭터를 선택해주세요.");
-            }
-        });
-
-    </script>
+    </script>
 </body>
 </html>
