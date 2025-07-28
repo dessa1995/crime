@@ -269,6 +269,8 @@
             display: flex;
             gap: 20px;
             margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         .char-card {
             background-color: var(--surface-color);
@@ -538,7 +540,7 @@
         
         #monster-info-display {
             position: absolute;
-            top: 70px;
+            top: 70px; /* Adjusted position */
             right: 20px;
             background-color: rgba(0,0,0,0.7);
             padding: 10px 15px;
@@ -575,19 +577,19 @@
             visibility: visible;
         }
         
-        #fixed-buttons-container {
+        /* UI Overlap Fix: Move buttons to a safer area */
+        #top-right-ingame-buttons {
             position: absolute;
-            bottom: 15px;
-            right: 15px;
-            z-index: 120;
-        }
-
-        #failsafe-container {
-            position: absolute;
-            bottom: 15px;
+            top: 70px;
             left: 15px;
             z-index: 120;
-            display: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        #failsafe-container {
+            display: none; /* Controlled by JS */
         }
 
 
@@ -595,10 +597,11 @@
         @media (max-width: 600px) {
             #start-screen h1 { font-size: 2.8em; }
             .btn { padding: 10px 20px; font-size: 1em; }
-            #character-selection-screen .char-options, #ingame-char-change-modal .char-options { flex-direction: column; align-items: center; }
+            #character-selection-screen .char-options { flex-direction: column; align-items: center; }
             .char-card img { width: 80px; height: 80px; }
             #status-bar { font-size: 0.9em; padding: 8px 15px; }
-            #monster-info-display { top: 70px; font-size: 0.9em; }
+            #monster-info-display { top: 60px; font-size: 0.9em; }
+            #top-right-ingame-buttons { top: 60px; }
             #quiz-container { max-height: 55%; padding: 10px; }
             #quiz-case { font-size: 0.95em; padding: 10px; }
             .quiz-btn { width: 90%; }
@@ -725,6 +728,15 @@
                 </div>
                 <div id="q2-options" style="display: none;"></div>
             </div>
+            <!-- UI Overlap Fix: Buttons moved here -->
+            <div id="top-right-ingame-buttons">
+                <div id="fixed-buttons-container">
+                    <button id="instructions-btn" class="btn btn-small">게임 설명</button>
+                </div>
+                <div id="failsafe-container">
+                    <button id="force-continue-btn" class="btn btn-small btn-danger">게임 멈춤? (클릭)</button>
+                </div>
+            </div>
         </div>
         
         <!-- 메시지 모달 -->
@@ -760,8 +772,8 @@
                     </li>
                     <li><strong>레벨업:</strong>
                         <ul>
-                           <li>각 난이도의 보스를 물리칠 때마다 레벨이 오르며, 공격 및 궁극기 이펙트가 화려해집니다.</li>
-                           <li>'도전자' 모드에서 200점 이상 획득 시 최종 레벨인 5레벨에 도달할 수 있습니다.</li>
+                            <li>각 난이도의 보스를 물리칠 때마다 레벨이 오르며, 공격 및 궁극기 이펙트가 화려해집니다.</li>
+                            <li>'도전자' 모드에서 200점 이상 획득 시 최종 레벨인 5레벨에 도달할 수 있습니다.</li>
                         </ul>
                     </li>
                     <li><strong>도전자 모드:</strong> 모든 난이도를 클리어하면 '도전자' 모드가 해금됩니다. 이 모드에서는 3개의 목숨으로 최대한 높은 점수를 기록하는 것에 도전합니다!</li>
@@ -799,14 +811,6 @@
                     <button id="cancel-ingame-char-change-btn" class="btn">취소</button>
                 </div>
             </div>
-        </div>
-
-        <div id="fixed-buttons-container">
-            <button id="instructions-btn" class="btn btn-small">게임 설명</button>
-        </div>
-        
-        <div id="failsafe-container">
-            <button id="force-continue-btn" class="btn btn-small btn-danger">게임 멈춤? (클릭)</button>
         </div>
 
         <audio id="bgm-audio" src="https://raw.githubusercontent.com/dessa1995/crime/main/bbgm.mp3" loop></audio>
@@ -859,15 +863,15 @@
             '전사': {
                 1: "강타",
                 2: "이중 베기",
-                3: "검무",
-                4: "십자 가르기",
-                5: "멸망의 심판"
+                3: "검의 비", // 변경됨
+                4: "만병의 비", // 변경됨
+                5: "심판의 검" // 변경됨
             },
             '마법사': {
-                1: "얼음의 비",
-                2: "회오리치는 폭풍",
+                1: "마력 화살",
+                2: "얼음 송곳",
                 3: "연쇄 번개",
-                4: "유성우",
+                4: "유성 낙하", // 변경됨
                 5: "원소의 격류"
             }
         };
@@ -1524,7 +1528,7 @@
                        <li><b>📱 아이폰:</b> 측면 버튼 + 음량 높이기 버튼 동시 누르기</li>
                        <li><b>📱 안드로이드:</b> 전원 버튼 + 음량 낮추기 버튼 동시 누르기</li>
                        <li><b>💻 윈도우:</b> 윈도우 키 + Shift + S</li>
-                       <li><b>💻 맥:</b> Shift + Command + 4</li>
+                       <li><b>� 맥:</b> Shift + Command + 4</li>
                    </ul>
                </div>
            `;
@@ -1625,8 +1629,8 @@
                     showMessage("저장된 게임이 없습니다.");
                 }
             } catch(e) {
-                 console.error("로컬 스토리지 불러오기 실패:", e);
-                 showMessage("저장된 게임을 불러오는 데 실패했습니다.");
+               console.error("로컬 스토리지 불러오기 실패:", e);
+               showMessage("저장된 게임을 불러오는 데 실패했습니다.");
             }
         }
 
@@ -1950,30 +1954,30 @@
                     ctx.beginPath(); ctx.arc(currentX, currentY, 20, 0, Math.PI * 2); ctx.fill();
                 } else if (level === 2) { // Ice Bolt
                      if (Math.random() > 0.3) {
-                        effectParticles.push({ type: 'ice_shard', x: currentX, y: currentY, vx: 20, vy: (Math.random()-0.5)*5, life: 0.5, size: 25 });
+                         effectParticles.push({ type: 'ice_shard', x: currentX, y: currentY, vx: 20, vy: (Math.random()-0.5)*5, life: 0.5, size: 25 });
                     }
                 } else if (level === 3) { // Chain Lightning
                     if (progress > 0.1 && progress < 0.9 && Math.random() > 0.5) {
                         effectParticles.push({ type: 'lightning', x: startX, y: startY, tx: endX, ty: endY, life: 0.5, color: '#f1c40f' });
                     }
-                } else if (level === 4) { // Small Meteor
+                } else if (level === 4) { // Small Meteor - UPGRADED
                     const p = Math.pow(progress, 2);
                     const meteorX = startX + (endX - startX) * p;
                     const meteorY = startY - 200 * (1-p);
-                    ctx.fillStyle = '#ff4500';
-                    ctx.shadowColor = 'red'; ctx.shadowBlur = 30;
-                    ctx.beginPath(); ctx.arc(meteorX, meteorY, 30, 0, Math.PI * 2); ctx.fill();
-                } else { // Level 5 Elemental Orbs
+                    drawRealisticMeteor(meteorX, meteorY, 35, 1 - progress);
+                } else { // Level 5 Elemental Orbs - UPGRADED
                     const p = progress * Math.PI * 2;
-                    // Fire
-                    ctx.fillStyle = 'orange'; ctx.shadowColor = 'red'; ctx.shadowBlur = 10;
-                    ctx.beginPath(); ctx.arc(currentX + Math.cos(p) * 40, currentY + Math.sin(p) * 40, 15, 0, 2*Math.PI); ctx.fill();
-                    // Ice
-                    ctx.fillStyle = 'cyan'; ctx.shadowColor = 'white'; ctx.shadowBlur = 10;
-                    ctx.beginPath(); ctx.arc(currentX + Math.cos(p + 2.1) * 40, currentY + Math.sin(p + 2.1) * 40, 15, 0, 2*Math.PI); ctx.fill();
-                    // Lightning
-                    ctx.fillStyle = 'yellow'; ctx.shadowColor = 'white'; ctx.shadowBlur = 10;
-                    ctx.beginPath(); ctx.arc(currentX + Math.cos(p + 4.2) * 40, currentY + Math.sin(p + 4.2) * 40, 15, 0, 2*Math.PI); ctx.fill();
+                    const orbX = currentX + Math.cos(p) * 40;
+                    const orbY = currentY + Math.sin(p) * 40;
+                    drawElementalOrb(orbX, orbY, 15, 'fire', progress);
+                    
+                    const orbX2 = currentX + Math.cos(p + 2.1) * 40;
+                    const orbY2 = currentY + Math.sin(p + 2.1) * 40;
+                    drawElementalOrb(orbX2, orbY2, 15, 'ice', progress);
+
+                    const orbX3 = currentX + Math.cos(p + 4.2) * 40;
+                    const orbY3 = currentY + Math.sin(p + 4.2) * 40;
+                    drawElementalOrb(orbX3, orbY3, 15, 'lightning', progress);
                 }
             }
             ctx.shadowBlur = 0;
@@ -1988,17 +1992,60 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (gameState.player.class === '전사') {
-                if (level === 1) { if (progress > 0.1 && progress < 0.8) drawRandomSlash(2, 180); if (progress > 0.8) drawFinalSlash(progress, '#aaa', 200); }
-                else if (level === 2) { if (progress > 0.1 && progress < 0.8) { drawRandomSlash(3, 220); drawRandomSlash(2, 180, '#ffdd00'); } if (progress > 0.8) drawFinalSlash(progress, '#ffdd00', 250); }
-                else if (level === 3) { if (progress > 0.1 && progress < 0.9) { drawRandomSlash(4, 250); drawRandomSlash(3, 220, '#ff8800'); } if (progress > 0.7) drawFinalSlash(progress, '#ff4400', 350); }
-                else if (level === 4) { if (progress > 0.1 && progress < 0.9) { drawRandomSlash(5, 300, 'cyan'); drawRandomSlash(4, 250, 'white'); } if (progress > 0.7) drawFinalSlash(progress, 'cyan', 450, true); }
-                else { if (progress > 0.1 && progress < 0.95) { drawRandomSlash(8, 400, '#e74c3c'); drawRandomSlash(7, 350, 'white'); } if (progress > 0.6) drawFinalSlash(progress, '#e74c3c', 600, true); }
+                if (level <= 2) { // Levels 1 & 2 remain the same
+                    if (level === 1) { if (progress > 0.1 && progress < 0.8) drawRandomSlash(2, 180); if (progress > 0.8) drawFinalSlash(progress, '#aaa', 200); }
+                    else { if (progress > 0.1 && progress < 0.8) { drawRandomSlash(3, 220); drawRandomSlash(2, 180, '#ffdd00'); } if (progress > 0.8) drawFinalSlash(progress, '#ffdd00', 250); }
+                } else if (level === 3) { // Level 3: Sword Rain
+                    if (Math.random() < progress * 5) {
+                        effectParticles.push({ type: 'falling_weapon', weaponType: 'sword', x: Math.random() * canvas.width, y: -50, life: 1, speed: Math.random() * 20 + 20, size: 60 });
+                    }
+                    if (progress > 0.2 && Math.random() < 0.5) {
+                        drawRandomSlash(1, 200, '#aaa');
+                    }
+                } else if (level === 4) { // Level 4: Weapon Rain
+                    if (Math.random() < progress * 7) {
+                        const weapons = ['sword', 'spear', 'arrow'];
+                        const weaponType = weapons[Math.floor(Math.random() * weapons.length)];
+                        effectParticles.push({ type: 'falling_weapon', weaponType: weaponType, x: Math.random() * canvas.width, y: -50, life: 1, speed: Math.random() * 25 + 25, size: 70 });
+                    }
+                     if (progress > 0.2 && Math.random() < 0.7) {
+                        drawRandomSlash(2, 250, '#ddd');
+                    }
+                } else { // Level 5: Judgment Sword
+                    const p_fall = Math.min(1, progress / 0.5);
+                    const p_impact = Math.max(0, (progress - 0.5) / 0.5);
+
+                    // Stage 1: Sword Fall
+                    if (p_fall < 1) {
+                        const swordY = -200 + (canvas.height * 0.8) * p_fall;
+                        drawJudgmentSword(canvas.width * 0.75, swordY, 400, p_fall);
+                    }
+                    
+                    // Stage 2: Impact
+                    if (p_impact > 0) {
+                        const impactP = Math.sin(p_impact * Math.PI);
+                        const shockwaveRadius = canvas.width * 0.8 * p_impact;
+                        ctx.strokeStyle = `rgba(255, 223, 186, ${1 - p_impact})`;
+                        ctx.lineWidth = 20 * (1 - p_impact);
+                        ctx.beginPath();
+                        ctx.arc(canvas.width * 0.75, canvas.height * 0.8, shockwaveRadius, 0, Math.PI * 2);
+                        ctx.stroke();
+
+                        // Stage 3: All-out attack after impact
+                        if (p_impact > 0.1 && Math.random() < p_impact * 10) {
+                            const weapons = ['sword', 'spear', 'arrow'];
+                            const weaponType = weapons[Math.floor(Math.random() * weapons.length)];
+                            effectParticles.push({ type: 'falling_weapon', weaponType: weaponType, x: Math.random() * canvas.width, y: -50, life: 1, speed: Math.random() * 30 + 30, size: 80 });
+                            drawRandomSlash(3, 300, `hsl(${Math.random()*60}, 100%, 70%)`);
+                        }
+                    }
+                }
             } else if (gameState.player.class === '마법사') {
                 if (level === 1) { drawIceRain(progress); }
                 else if (level === 2) { drawTornado(progress); }
                 else if (level === 3) { drawMultiLightning(progress); }
-                else if (level === 4) { drawMeteorShower(progress); }
-                else { drawGrandElemental(progress); }
+                else if (level === 4) { drawMeteorShower(progress); } // Upgraded visuals will be applied via the particle
+                else { drawGrandElemental(progress); } // Upgraded visuals will be applied via the particle
             }
         }
 
@@ -2022,36 +2069,30 @@
             if (hasAura) {
                 const auraSize = size * 1.2 * alpha;
                 const grad = ctx.createRadialGradient(0, 0, auraSize * 0.2, 0, 0, auraSize);
-                grad.addColorStop
-grad.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.8})`);
-                grad.addColorStop(0.5, `rgba(255, 255, 200, ${alpha * 0.5})`);
-                grad.addColorStop(1, `rgba(255, 100, 100, 0)`);
-                ctx.fillStyle = grad;
-                ctx.beginPath();
-                ctx.arc(0, 0, auraSize, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            const finalSlashSize = size * Math.min(1, p * 2);
-            drawSharpSlash(0, 0, finalSlashSize * 1.5, finalSlashSize * 0.75, alpha, color, 'white', 50, 40, 45);
-            drawSharpSlash(0, 0, finalSlashSize * 1.5, finalSlashSize * 0.75, alpha, 'white', color, 50, 25, -45);
-            ctx.restore();
-        }
+                grad.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.8})`);
+                grad.addColorStop(0.5, `rgba(255, 255, 200, ${alpha * 0.5})`);
+                grad.addColorStop(1, `rgba(255, 100, 100, 0)`);
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(0, 0, auraSize, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            const finalSlashSize = size * Math.min(1, p * 2);
+            drawSharpSlash(0, 0, finalSlashSize * 1.5, finalSlashSize * 0.75, alpha, color, 'white', 50, 40, 45);
+            drawSharpSlash(0, 0, finalSlashSize * 1.5, finalSlashSize * 0.75, alpha, 'white', color, 50, 25, -45);
+            ctx.restore();
+        }
 
-        function drawIceRain(progress) {
-            if (Math.random() < progress * 2) {
-                const x = Math.random() * canvas.width;
-                const life = Math.random() * 0.5 + 0.5;
-                effectParticles.push({ type: 'ice_rain', x: x, y: -40, life: life, speed: Math.random() * 15 + 15, size: Math.random() * 30 + 20 });
-            }
-        }
+        function drawIceRain(progress) {
+            if (Math.random() < progress * 2) {
+                const x = Math.random() * canvas.width;
+                const life = Math.random() * 0.5 + 0.5;
+                effectParticles.push({ type: 'ice_rain', x: x, y: -40, life: life, speed: Math.random() * 15 + 15, size: Math.random() * 30 + 20 });
+            }
+        }
 
-        function drawTornado(progress) {
-            const centerX = canvas.width / 2 + Math.sin(progress * Math.PI * 4) * 80;
-            const p = Math.sin(progress * Math.PI);
-            for(let i=0; i<120; i++) {
-                const angle = (Date.now() / 8 + i * 25) * 0.1;
-                const radius = (1 - (i/120)) * canvas.width * 0.5 * p * (1 + Math.sin(progress * Math.PI * 2) * 0.1);
-                const x = centerX + Math.cos(angle) * radius;
+        function drawTornado(progress) {
+             x = centerX + Math.cos(angle) * radius;
                 const y = canvas.height - (i/120) * canvas.height * 1.3;
                 ctx.fillStyle = `rgba(200, 220, 230, ${Math.random() * 0.4 * p})`;
                 ctx.beginPath();
@@ -2107,6 +2148,62 @@ grad.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.8})`);
             }
         }
 
+        function drawRealisticMeteor(x, y, size, alpha) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            const grad = ctx.createRadialGradient(x, y, size * 0.1, x, y, size);
+            grad.addColorStop(0, 'white');
+            grad.addColorStop(0.4, 'yellow');
+            grad.addColorStop(0.8, 'orangered');
+            grad.addColorStop(1, 'rgba(255, 69, 0, 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawElementalOrb(x, y, size, type, progress) {
+            ctx.save();
+            ctx.globalAlpha = Math.sin(progress * Math.PI);
+            let color1, color2, shadowColor;
+            if(type === 'fire') { color1 = 'orange'; color2 = 'red'; shadowColor = 'red'; }
+            else if (type === 'ice') { color1 = 'cyan'; color2 = 'blue'; shadowColor = 'white'; }
+            else { color1 = 'yellow'; color2 = 'white'; shadowColor = 'yellow'; }
+
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, size);
+            grad.addColorStop(0, color2);
+            grad.addColorStop(1, color1);
+            ctx.fillStyle = grad;
+            ctx.shadowColor = shadowColor;
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawJudgmentSword(x, y, size, alpha) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.shadowColor = 'gold';
+            ctx.shadowBlur = 40 * alpha;
+            
+            // Blade
+            ctx.fillStyle = 'lightyellow';
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x-size*0.05, y+size*0.8);
+            ctx.lineTo(x, y+size);
+            ctx.lineTo(x+size*0.05, y+size*0.8);
+            ctx.closePath();
+            ctx.fill();
+
+            // Hilt
+            ctx.fillStyle = 'gold';
+            ctx.fillRect(x - size * 0.15, y, size * 0.3, size * 0.1);
+            ctx.restore();
+        }
 
         function drawConfetti(deltaTime) {
              effectParticles.forEach((p, index) => {
@@ -2180,15 +2277,50 @@ grad.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.8})`);
                         p.life = 0;
                         for(let i=0; i<10; i++) effectParticles.push({ type: 'ember', x: p.x, y: p.y, vx: (Math.random()-0.5)*8, vy: (Math.random()-0.8)*8, life: 0.5, size: Math.random() * 4 + 2 });
                     }
-                    ctx.fillStyle = '#ff4500';
-                    ctx.shadowColor = 'red'; ctx.shadowBlur = p.size;
-                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2); ctx.fill();
+                    drawRealisticMeteor(p.x, p.y, p.size, p.life);
+                } else if (p.type === 'falling_weapon') {
+                    p.y += p.speed * (deltaTime/16);
+                    if (p.y > canvas.height * 0.8) {
+                        p.life = 0;
+                        // Impact sparks
+                        for(let i=0; i<10; i++) effectParticles.push({ type: 'ember', x: p.x, y: p.y, vx: (Math.random()-0.5)*6, vy: -Math.random()*6, life: 0.4, size: 3 });
+                    }
+                    drawFallingWeapon(p.x, p.y, p.size, p.weaponType, p.life);
                 }
 
                 ctx.restore();
             });
             ctx.shadowBlur = 0;
         }
+
+        function drawFallingWeapon(x, y, size, type, alpha) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = '#aaa';
+            ctx.fillStyle = '#666';
+            ctx.lineWidth = 4;
+            ctx.shadowColor = 'white';
+            ctx.shadowBlur = 10;
+
+            if (type === 'sword') {
+                ctx.beginPath();
+                ctx.moveTo(x, y - size/2); ctx.lineTo(x-size*0.08, y + size/2); ctx.lineTo(x, y+size/2 + 10); ctx.lineTo(x+size*0.08, y+size/2); ctx.closePath();
+                ctx.fill(); ctx.stroke();
+                ctx.fillRect(x - size * 0.2, y - size/2, size * 0.4, 5);
+            } else if (type === 'spear') {
+                ctx.beginPath();
+                ctx.moveTo(x, y + size/2); ctx.lineTo(x, y - size/2 + 10);
+                ctx.moveTo(x, y - size/2); ctx.lineTo(x - 10, y - size/2 + 20); ctx.lineTo(x + 10, y - size/2 + 20); ctx.closePath();
+                ctx.stroke(); ctx.fill();
+            } else if (type === 'arrow') {
+                ctx.beginPath();
+                ctx.moveTo(x, y + size/2); ctx.lineTo(x, y - size/2);
+                ctx.moveTo(x-10, y+size/2-10); ctx.lineTo(x, y+size/2); ctx.lineTo(x+10, y+size/2-10);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
 
         function drawSharpSlash(x, y, height, width, alpha, color, shadowColor, shadowBlur, lineWidth, angle = 0) {
             ctx.save();
