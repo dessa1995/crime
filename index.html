@@ -1298,11 +1298,7 @@
                     btn.dataset.answerIndex = index;
                     q2OptionsEl.appendChild(btn);
                 });
-            } else if (quiz.type === 'two-step') {
-                quizCaseEl.innerHTML = `[O/X 문제]<br>${quiz.case}`;
-                q1OptionsEl.style.display = 'flex';
-                q2OptionsEl.style.display = 'none';
-            } else { 
+            } else { // 'one-step-ox' and 'two-step' both start here
                 quizCaseEl.innerHTML = `[O/X 문제]<br>${quiz.case}`;
                 q1OptionsEl.style.display = 'flex';
                 q2OptionsEl.style.display = 'none';
@@ -1313,6 +1309,7 @@
         
         function displayQ2ForTwoStep() {
             const quiz = gameState.currentQuiz;
+            q2OptionsEl.innerHTML = ''; // Clear previous options
             const q2Question = quiz.q2_question || "위 O/X 판단에 대한 근거로 가장 적절한 것을 고르시오.";
             quizCaseEl.innerHTML = `<b>[심화 문제]</b><br>${q2Question}`;
             q1OptionsEl.style.display = 'none';
@@ -1328,28 +1325,33 @@
             unlockInput();
         }
 
-        function handleAnswer(isCorrect) {
+        function handleQ1Answer(answer) {
             if (isInputLocked) return;
             lockInput();
+            const quiz = gameState.currentQuiz;
+            const isCorrect = (answer === quiz.q1);
 
-            if (!isCorrect) {
-                handleIncorrectAnswer();
-            } else {
-                const quiz = gameState.currentQuiz;
-                if (quiz.type === 'two-step' && !q2OptionsEl.style.display || q2OptionsEl.style.display === 'none') {
+            if (isCorrect) {
+                if (quiz.type === 'two-step') {
                     displayQ2ForTwoStep();
-                } else {
+                } else { // 'one-step-ox' is handled here
                     handleCorrectAnswer();
                 }
+            } else {
+                handleIncorrectAnswer();
             }
         }
 
-        function handleQ1Answer(answer) {
-            handleAnswer(answer === gameState.currentQuiz.q1);
-        }
-
         function handleQ2Answer(index) {
-            handleAnswer(index == gameState.currentQuiz.answerIndex);
+            if (isInputLocked) return;
+            lockInput();
+            const isCorrect = (index == gameState.currentQuiz.answerIndex);
+
+            if (isCorrect) {
+                handleCorrectAnswer();
+            } else {
+                handleIncorrectAnswer();
+            }
         }
         
         async function handleUltimateSkill() {
@@ -1954,16 +1956,16 @@
                         drawSharpSlash(0, 0, 300, 150, p_cross, 'red', 'white', 60, 20, -45);
                         ctx.restore();
                     }
-                } else { // Level 5: 차원 베기 (블랙홀 효과 추가)
+                } else { // Level 5: 차원 베기 (수정)
                     const slashProgress = Math.min(1, progress / 0.6);
                     const vortexProgress = Math.max(0, (progress - 0.5) / 0.5);
                     const p = Math.sin(slashProgress * Math.PI);
                     
                     if (slashProgress > 0) {
-                        drawDimensionalSlash(endX, endY, 400 * p, `rgba(44, 62, 80, ${p})`, `rgba(231, 76, 60, ${p})`);
+                        drawDimensionalSlash(endX, endY, 450 * p, `rgba(26, 26, 40, ${p})`, `rgba(255, 50, 50, ${p})`);
                     }
                     if (vortexProgress > 0) {
-                        drawVortex(endX, endY, 150 * vortexProgress, vortexProgress, '#2c3e50', '#e74c3c');
+                        drawVortex(endX, endY, 200 * vortexProgress, vortexProgress, '#2c3e50', '#e74c3c');
                     }
                 }
             } else if (gameState.player.class === '마법사') {
@@ -2061,7 +2063,7 @@
                          if (progress > 0.1 && progress < 0.9) drawRandomSlash(7, 300, 'cyan');
                          if (progress > 0.6) drawFinalSlash(progress, 'cyan', 450, true, true);
                      }
-                } else { // Lv 5: 카오스 엣지: 디멘션 브레이크
+                } else { // Lv 5: 카오스 엣지: 디멘션 브레이크 (수정)
                     const p1 = Math.min(1, progress / 0.7);
                     const p2 = Math.max(0, (progress - 0.5) / 0.5);
                     const p3 = Math.max(0, (progress - 0.8) / 0.2);
@@ -2083,8 +2085,8 @@
 
                     if (p3 > 0) {
                         const slashP = Math.sin(p3 * Math.PI);
-                        drawDimensionalSlash(canvas.width / 2, canvas.height / 2, canvas.width * 1.5, `rgba(44, 62, 80, ${slashP})`, `rgba(231, 76, 60, ${slashP})`);
-                        drawVortex(canvas.width / 2, canvas.height / 2, canvas.width * p3, p3, '#2c3e50', '#e74c3c');
+                        drawDimensionalSlash(canvas.width / 2, canvas.height / 2, canvas.width * 1.8, `rgba(20, 20, 30, ${slashP})`, `rgba(200, 30, 30, ${slashP})`);
+                        drawVortex(canvas.width / 2, canvas.height / 2, canvas.width * p3, p3, '#1a1a2e', '#e94560');
                         const shake = 40 * slashP;
                         canvas.style.transform = `translate(${Math.random() * shake - shake/2}px, ${Math.random() * shake - shake/2}px)`;
                     }
@@ -2093,13 +2095,13 @@
                 if (level <= 3) {
                     const effects = [drawIceRain, drawTornado, drawMultiLightning];
                     effects[level - 1](progress);
-                } else if (level === 4) { // Lv 4: 유성우 + 피니시
+                } else if (level === 4) { // Lv 4: 유성우 + 피니시 (수정)
                     drawMeteorShower(progress);
                     const finalMeteorProgress = Math.max(0, (progress - 0.7) / 0.3);
                     if (finalMeteorProgress > 0) {
                         drawFinalMeteor(finalMeteorProgress);
                     }
-                } else { // Lv 5: 원소의 격류
+                } else { // Lv 5: 원소의 격류 (수정)
                     drawGrandElemental(progress);
                     const explosionProgress = Math.max(0, (progress - 0.8) / 0.2);
                     if (explosionProgress > 0) {
@@ -2121,13 +2123,14 @@
         function drawDimensionalSlash(x, y, size, color, shadowColor) {
             ctx.save();
             ctx.strokeStyle = color;
-            ctx.lineWidth = size * 0.05 + 5; // 더 굵고 날카롭게
+            ctx.lineWidth = size * 0.05 + 5;
             ctx.shadowColor = shadowColor;
             ctx.shadowBlur = size * 0.3;
             
             ctx.beginPath();
-            ctx.moveTo(x - size / 2, y);
-            ctx.quadraticCurveTo(x, y, x + size / 2, y);
+            const angle = -10 * Math.PI / 180;
+            ctx.moveTo(x - size/2 * Math.cos(angle), y - size/2 * Math.sin(angle));
+            ctx.quadraticCurveTo(x, y, x + size/2 * Math.cos(angle), y + size/2 * Math.sin(angle));
             ctx.stroke();
 
             ctx.lineWidth = size * 0.02 + 2;
@@ -2140,17 +2143,17 @@
             ctx.save();
             ctx.translate(x, y);
             const p = Math.sin(progress * Math.PI);
-            for (let i = 0; i < 70; i++) {
+            for (let i = 0; i < 80; i++) { // 입자 증가
                 const angle = (Date.now() / 8 + i * 18) * 0.1;
-                const r = (i / 70) * radius * (1.2 - p);
+                const r = (i / 80) * radius * (1.2 - p);
                 const particleX = Math.cos(angle) * r;
                 const particleY = Math.sin(angle) * r;
-                const dist = (i / 70);
+                const dist = (i / 80);
                 
                 ctx.fillStyle = i % 2 === 0 ? color1 : color2;
                 ctx.globalAlpha = (1 - dist) * p * 1.5;
                 ctx.beginPath();
-                ctx.arc(particleX, particleY, (1 - dist) * radius * 0.08, 0, Math.PI * 2);
+                ctx.arc(particleX, particleY, (1 - dist) * radius * 0.1, 0, Math.PI * 2);
                 ctx.fill();
             }
             ctx.restore();
