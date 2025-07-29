@@ -395,7 +395,6 @@
             width: 100%;
             height: 100%;
             z-index: 1;
-            /* 전사 5레벨 스킬 사용 후 화면 틀어짐 버그 방지를 위해 transition 추가 */
             transition: transform 0.1s ease-out;
         }
         
@@ -581,17 +580,17 @@
             position: absolute;
             bottom: 15px;
             right: 15px;
-            z-index: 20; /* UI 겹침 방지를 위해 z-index 조정 */
+            z-index: 20;
             transition: bottom 0.4s ease-in-out;
         }
 
+        /* "게임 멈춤" 버튼 위치 수정 */
         #failsafe-container {
             position: absolute;
-            bottom: 15px;
+            top: 70px; 
             left: 15px;
-            z-index: 20; /* UI 겹침 방지를 위해 z-index 조정 */
+            z-index: 20;
             display: none;
-            transition: bottom 0.4s ease-in-out;
         }
 
 
@@ -861,14 +860,14 @@
                 2: "이중 베기",
                 3: "검의 춤",
                 4: "십자 가르기",
-                5: "차원 베기" // 수정
+                5: "차원 베기"
             },
             '마법사': {
                 1: "마력 화살",
                 2: "얼음 송곳",
                 3: "연쇄 번개",
-                4: "거대 화염 운석", // 수정
-                5: "원소 대폭발" // 수정
+                4: "거대 화염 운석",
+                5: "원소 대폭발"
             }
         };
 
@@ -878,7 +877,7 @@
                 2: "진 폭풍 가르기",
                 3: "검의 비",
                 4: "병기 폭풍",
-                5: "차원 붕괴" // 수정
+                5: "카오스 엣지: 디멘션 브레이크" // 명칭 수정
             },
             '마법사': {
                 1: "얼음의 비",
@@ -957,8 +956,7 @@
             { id: 225, type: 'single', difficulty: '중', case: "A는 폭행을 가한 상대방에게 보복 차원에서 며칠 뒤 찾아가 다시 폭력을 행사하였다. 이 행위에 대한 법적 판단으로 옳은 것은?", q2: ["정당방위에 해당하므로 위법성이 조각된다.", "현재의 위난이 존재하므로 긴급피난이다.", "자구행위에 해당한다.", "위법성이 조각되지 않는다."], answerIndex: 3, explanation: "정당방위, 긴급피난, 자구행위 모두 ‘현재성’이 요건이므로, 사후의 보복 행위는 위법성이 조각되지 않는다." },
             { id: 226, type: 'single', difficulty: '중', case: "A는 타인의 소중한 물건을 고의로 훼손했으나, 피해자가 \"괜찮다\"고 명시적으로 동의한 사실이 확인되었다. 다만 훼손된 물건은 공공 미술재산이었다. A의 행위에 대해 적용될 수 있는 판단은?", q2: ["피해자의 승낙에 의해 위법성이 조각된다.", "피해자의 승낙은 공공재산에 대해 유효하므로 책임이 없다.", "공공의 법익에 대한 동의는 효력이 없으므로 위법하다.", "정당방위로 볼 수 있다."], answerIndex: 2, explanation: "피해자의 승낙은 자기 법익에만 미치며, 공공의 법익에 관한 동의는 원칙적으로 위법성을 조각하지 못한다." },
             { id: 227, type: 'single', difficulty: '중', case: "A는 자신이 구입한 중고차가 고장이 많자 판매자에게 강하게 항의했고, 급기야 판매자의 차량을 발로 찼다. 이후 A는 자신이 차량 하자에 따른 청구권을 가지고 있다고 주장하였다. 법적 평가로 가장 타당한 것은?", q2: ["청구권이 있다면 어떤 방법으로든 실현 가능하다.", "자구행위 요건을 충족하므로 위법하지 않다.", "법적 절차가 가능한 경우 자구행위는 허용되지 않는다.", "형사 미성년자이면 범죄가 되지 않는다."], answerIndex: 2, explanation: "자구행위는 법적 구제가 불가능하거나 매우 곤란한 경우에 한하여 정당화된다." },
-            { id: 228, type: 'single', difficulty: '중', case: "B는 만취 상태에서 행인과 시비가 붙어 폭행을 가하였다. 당시 그는 술에 취해 있었으나 상황 판단은 가능하였다. 이 경우 법적으로 타당한 평가는?", q2: ["심신상실 상태이므로 범죄가 성립하지 않는다.", "심신미약으로 인정되어 형이 감경될 수 있다.", "고의성이 없으므로 처벌되지 않는다.", "긴급피난 상태이므로 위법하지 않다."], answerIndex: 1, explanation: "음주로 인한 판단 능력 저하는 심신미약으로 평가될 수 있으며, 형의 감경 사유에 해당한다." }, 
-
+            { id: 228, type: 'single', difficulty: '중', case: "B는 자신의 아들을 납치한 납치범의 강요로 인해 어쩔 수 없이 C를 폭행하였다. 이 경우 법적으로 타당한 평가는?", q2: ["심신상실 상태이므로 범죄가 성립하지 않는다.", "강요된 행위로 책임이 조각되어 처벌되지 않는다.", "고의성이 없으므로 처벌되지 않는다.", "긴급피난 상태이므로 위법하지 않다."], answerIndex: 1, explanation: "저항할 수 있을것이라고 기대되지 않는 강요된 행위는 법정 비난가능성이 없으므로 책임이 조각된다." },
             // 기존 '상' 난이도 퀴즈
             { id: 301, type: 'two-step', difficulty: '상', case: "형법의 규범적 기능은 국민에게 행위의 준칙으로 삼도록 하고, 법관에게는 범죄 성립 여부를 판단하는 평가 규범으로서의 역할을 한다.", q1: 'O', q2_question: "다음은 어떤 사람이 법정에서 '범죄인 줄 몰랐다'고 주장했으나 처벌받은 사례입니다. 이 사례를 통해 알 수 있는 형법의 기능으로 가장 적절한 것은?", q2: ["보호적 기능", "보장적 기능", "규범적 기능", "보충적 기능"], answerIndex: 2, explanation: "국민이 준수해야 할 행위 준칙을 제시하고, 법관에게는 판단 기준을 제공하는 규범적 기능에 해당한다." },
             { id: 302, type: 'two-step', difficulty: '상', case: "형법 제243조는 '음란한 문서, 도화, 필름, 그 밖의 물건을 공공연하게 전시한 자'를 처벌하도록 규정하고 있으나, '음란'의 개념이 명확히 정의되어 있지 않다. 이에 따라 A가 성인용 만화를 출판한 사건에서, 법원은 해당 만화가 예술성과 표현의 자유를 고려할 때 명백한 음란물로 단정하기 어렵고, '음란'이라는 용어 자체가 불명확하다는 이유로 무죄를 선고하였다. 법원의 판단은 죄형법정주의 원칙에 어긋나는가?", q1: 'X', q2_question: "이 사례에서 법원의 판단 근거가 된 죄형 법정주의의 원칙은 무엇입니까?", q2: ["관습 형법 금지의 원칙", "소급효 금지의 원칙", "명확성의 원칙", "유추 해석 금지의 원칙"], answerIndex: 2, explanation: "'음란'이라는 용어가 모호하여 법 적용이 어려웠던 사례로, 죄형 법정주의의 명확성 원칙을 보여준다." },
@@ -997,7 +995,7 @@
             { id: 407, type: 'two-step', difficulty: '최상', case: "갑은 2022년 12월 31일 범죄를 저질렀고, 2023년 1월 1일부터 형량이 감경된 개정 법률이 시행되었다. 법원은 갑에게 개정법을 적용했다. 이 경우 법원의 판단은 법적으로 타당하다.", q1: 'O', q2_question: "이 경우 법원의 판단을 뒷받침하는 법 원칙은 무엇인가?", q2: ["죄형 법정주의의 예외", "피고에게 유리한 소급 적용 허용", "적법 절차 원칙", "법관 재량주의"], answerIndex: 1, explanation: "피고에게 유리한 경우에는 소급하여 법을 적용할 수 있다. 형벌 불소급 원칙의 예외이다." },
             { id: 408, type: 'two-step', difficulty: '최상', case: "정당방위가 인정되기 위해서는 침해에 대한 방어행위가 ‘상당성’을 갖추어야 한다.", q1: 'O', q2_question: "갑은 택시기사와 요금 시비 중 얼굴에 침을 맞자 화가 나 주먹으로 기사의 턱을 가격해 골절상을 입혔다. 갑의 행위에 대한 판단으로 옳은 것은?", q2: ["정당방위가 인정된다.", "정당방위이나 과잉방위로 감경된다.", "위법성 조각 사유가 없다.", "책임 조각 사유에 해당한다."], answerIndex: 2, explanation: "침을 맞은 것이 폭행이긴 하나 생명·신체의 실질적 침해로 보기 어려우며, 주먹으로 턱을 골절시킨 것은 상당성을 초과하여 정당방위가 부정된다." },
             { id: 409, type: 'two-step', difficulty: '최상', case: "긴급피난은 회피를 위한 수단이 사회상규에 위배되어도 적용된다.", q1: 'X', q2_question: "홍수로 인해 탈출이 필요한 상황에서 갑이 타인의 차량을 무단 점유하여 대피하였다. 이후 차량 파손이 발생하였다. 다음 중 옳은 설명은?", q2: ["긴급피난이므로 책임이 조각된다.", "긴급피난이므로 위법성은 조각되나 손해배상 책임은 존재한다.", "위법성이 조각되지 않는다.", "불법행위로 형사처벌 가능하다."], answerIndex: 1, explanation: "긴급피난으로 위법성은 조각되나 민사상 불법행위책임은 여전히 인정된다." },
-            { id: 410, type: 'two-step', difficulty: '최상', case: "자구행위는 청구권 보전 외 보복이나 감정적 목적을 가지면 인정되지 않는다.", q1: 'O', q2_question: "병은 친구가 빌려간 고가의 노트북을 돌려주지 않자 친구가 없는 틈을 타 자택에 무단침입하여 노트북을 가져왔다. 병의 행위는?", q2: ["정당한 자구행위이다.", "절도죄로 위법하다.", "사회상규에 따른 행위이다.", "피해자의 승낙이 있었던 것으로 본다."], answerIndex: 1, explanation: "자구행위로 인정되기 위해선 급박성과 비례성, 불가피성이 충족되어야 하며, 본 사례는 불법침입 및 절도에 해당한다." },
+            { id: 410, type: 'two-step', difficulty: '최상', case: "자구행위는 청구권 보전 외 보복이나 감정적 목적을 가지면 인정되지 않는다.", q1: 'O', q2_question: "병은 친구가 빌려간 고가의 노트북을 돌려주지 않자 친구가 없는 틈을 타 자택에 무단침입하여 노트북을 가져왔다. 병의 행위는?", q2: ["정당한 자구행위이다.", "주거침입죄로 위법하다.", "사회상규에 따른 행위이다.", "피해자의 승낙이 있었던 것으로 본다."], answerIndex: 1, explanation: "자구행위로 인정되기 위해선 급박성과 비례성, 불가피성이 충족되어야 하며, 본 사례는 불법침입 및 절도에 해당한다." },
             { id: 411, type: 'two-step', difficulty: '최상', case: "피해자의 승낙이 있어도 건전한 사회상규를 현저히 위반한 경우 위법성은 조각되지 않는다.", q1: 'O', q2_question: "을은 방송 콘텐츠를 위해 타인의 동의를 받고 심각한 폭력을 행사하여 영상을 촬영하였다. 해당 영상은 유튜브에 업로드되었고, 다수의 신고가 접수되었다. 이 경우 판단은?", q2: ["피해자의 승낙이 있어 위법성 없음", "공공질서 위반으로 위법성 있음", "단순한 동영상으로 형사처벌 불가", "쌍방합의된 사안은 형사처벌 대상 아님"], answerIndex: 1, explanation: "피해자의 승낙이 있다 하더라도 사회통념상 용인되지 않는 경우 위법성이 조각되지 않는다." },
             { id: 412, type: 'two-step', difficulty: '최상', case: "형법상 심신미약자는 그 책임이 조각되는 것은 아니며 형을 감경할 수 있다.", q1: 'O', q2_question: "정신질환을 앓고 있던 정은 치료 도중 환각 상태에서 타인을 폭행했다. 법원은 정에게 조현병이 있었고 판단력이 저하되어 있었으므로 심신미약 상태였다고 판단했다. 이 경우 법원이 결정할 처분으로 가장 가능성이 높은 것은?", q2: ["무죄 선고", "책임 조각", "형의 감경", "위법성 조각"], answerIndex: 2, explanation: "심신미약 상태로 판단된 경우 범죄는 성립하나 형의 감경이 가능하다." },
             { id: 413, type: 'two-step', difficulty: '최상', case: "형사 미성년자는 범죄를 저질러도 형벌을 부과할 수 없다.", q1: 'O', q2_question: "만 13세인 김은 무단으로 차량을 운전하다 사고를 냈다. 이 경우의 조치는?", q2: ["자동차등불법사용죄로 형사처벌", "형사책임 감경", "보호처분", "소년교도소 수용"], answerIndex: 2, explanation: "형사 미성년자에게는 형벌 대신 보호처분이 내려질 수 있다." },
@@ -1022,7 +1020,6 @@
                   isBossFight: false, bossStage: 0,
                   currentScreen: 'start-screen',
                   animation: { type: null, progress: 0, duration: 0, onEnd: null, data: {} },
-                  questionsAttempted: 0,
                   questionsCorrect: 0,
                   isSkippable: false,
                   onSkip: null,
@@ -1163,7 +1160,6 @@
             gameState.usedQuizIds = [];
             gameState.isBossFight = false;
             gameState.bossStage = 0;
-            gameState.questionsAttempted = 0;
             gameState.questionsCorrect = 0;
             gameState.hasUsedUltimate = false;
 
@@ -1332,39 +1328,28 @@
             unlockInput();
         }
 
-        function handleQ1Answer(answer) {
+        function handleAnswer(isCorrect) {
             if (isInputLocked) return;
             lockInput();
 
-            gameState.questionsAttempted++; // 1단계 문제 시도 시 카운트
-            updateStatus();
-
-            const quiz = gameState.currentQuiz;
-            if (answer === quiz.q1) {
-                if (quiz.type === 'one-step-ox') {
-                    handleCorrectAnswer();
-                } else { 
-                    displayQ2ForTwoStep();
-                }
-            } else {
+            if (!isCorrect) {
                 handleIncorrectAnswer();
+            } else {
+                const quiz = gameState.currentQuiz;
+                if (quiz.type === 'two-step' && !q2OptionsEl.style.display || q2OptionsEl.style.display === 'none') {
+                    displayQ2ForTwoStep();
+                } else {
+                    handleCorrectAnswer();
+                }
             }
         }
 
+        function handleQ1Answer(answer) {
+            handleAnswer(answer === gameState.currentQuiz.q1);
+        }
+
         function handleQ2Answer(index) {
-            if (isInputLocked) return;
-            lockInput();
-
-            if (gameState.currentQuiz.type === 'two-step') {
-                gameState.questionsAttempted++; // 2단계 문제 시도 시 카운트
-                updateStatus();
-            }
-
-            if (index == gameState.currentQuiz.answerIndex) {
-                handleCorrectAnswer();
-            } else {
-                handleIncorrectAnswer();
-            }
+            handleAnswer(index == gameState.currentQuiz.answerIndex);
         }
         
         async function handleUltimateSkill() {
@@ -1476,7 +1461,6 @@
         }
         
         function prepareNextEncounter() {
-            // Ensure no lingering animations or locks
             clearAnimation();
             unlockInput();
 
@@ -1586,7 +1570,7 @@
                 const bossThresholds = { '하': 5, '중': 8, '상': 10 };
                 const needed = bossThresholds[gameState.difficulty];
                 const remaining = Math.max(0, needed - gameState.questionsCorrect);
-                progressText = `푼 문제: ${gameState.questionsAttempted} | 정답: ${gameState.questionsCorrect}`;
+                progressText = `정답: ${gameState.questionsCorrect}`;
                 if (!gameState.isBossFight && !gameState.clearedStages[gameState.difficulty]) {
                     progressText += ` | 보스까지: ${remaining}문제`;
                 }
@@ -1970,14 +1954,16 @@
                         drawSharpSlash(0, 0, 300, 150, p_cross, 'red', 'white', 60, 20, -45);
                         ctx.restore();
                     }
-                } else { // Level 5: 차원 베기
-                    const p = Math.sin(progress * Math.PI);
-                    const vortexProgress = Math.min(1, progress * 2);
-                    drawVortex(endX, endY, 150 * vortexProgress, progress);
+                } else { // Level 5: 차원 베기 (블랙홀 효과 추가)
+                    const slashProgress = Math.min(1, progress / 0.6);
+                    const vortexProgress = Math.max(0, (progress - 0.5) / 0.5);
+                    const p = Math.sin(slashProgress * Math.PI);
                     
-                    if (progress > 0.4 && progress < 0.7) {
-                        const slashP = (progress - 0.4) / 0.3;
-                        drawDimensionalSlash(endX, endY, 300, `rgba(142, 68, 173, ${Math.sin(slashP * Math.PI)})`);
+                    if (slashProgress > 0) {
+                        drawDimensionalSlash(endX, endY, 400 * p, `rgba(44, 62, 80, ${p})`, `rgba(231, 76, 60, ${p})`);
+                    }
+                    if (vortexProgress > 0) {
+                        drawVortex(endX, endY, 150 * vortexProgress, vortexProgress, '#2c3e50', '#e74c3c');
                     }
                 }
             } else if (gameState.player.class === '마법사') {
@@ -1988,34 +1974,34 @@
                 const projectileX = startX + (endX - startX) * travelProgress;
                 const projectileY = startY;
 
-                if (level <= 3) { // 기존 1-3레벨 마법사 공격
+                if (level <= 3) {
                     const currentX = startX + (endX - startX) * progress;
                     const currentY = startY;
-                    if (level <= 1) { // Magic Missile
+                    if (level <= 1) {
                         ctx.fillStyle = `rgba(173, 216, 230, ${1 - progress})`;
                         ctx.shadowColor = 'cyan'; ctx.shadowBlur = 15;
                         ctx.beginPath(); ctx.arc(currentX, currentY, 20, 0, Math.PI * 2); ctx.fill();
-                    } else if (level === 2) { // Ice Bolt
+                    } else if (level === 2) {
                         if (Math.random() > 0.3) {
                             effectParticles.push({ type: 'ice_shard', x: currentX, y: currentY, vx: 20, vy: (Math.random()-0.5)*5, life: 0.5, size: 25 });
                         }
-                    } else { // Chain Lightning
+                    } else {
                         if (progress > 0.1 && progress < 0.9 && Math.random() > 0.5) {
                             effectParticles.push({ type: 'lightning', x: startX, y: startY, tx: endX, ty: endY, life: 0.5, color: '#f1c40f' });
                         }
                     }
-                } else if (level === 4) { // Lv 4: 거대 화염 운석
+                } else if (level === 4) {
                     drawMagicCircle(startX, startY, 70 * chargeProgress, '#e74c3c', `rgba(255, 100, 0, ${0.5 * chargeProgress})`);
                     if (progress > 0.5) {
-                        drawMeteorProjectile(projectileX, projectileY, 50); // 크기 증가
+                        drawMeteorProjectile(projectileX, projectileY, 50);
                     }
                     if (impactProgress > 0) {
-                        drawExplosion(endX, endY, 250 * impactProgress, '#ff4500', 'red'); // 폭발 크기 증가
-                        if (Math.random() < impactProgress * 3) { // 연쇄 폭발 효과
+                        drawExplosion(endX, endY, 250 * impactProgress, '#ff4500', 'red');
+                        if (Math.random() < impactProgress * 3) {
                              effectParticles.push({ type: 'secondary_explosion', x: endX + (Math.random()-0.5)*150, y: endY + (Math.random()-0.5)*150, life: 0.5, maxLife: 0.5, radius: 100 });
                         }
                     }
-                } else { // Lv 5: 원소 대폭발
+                } else {
                     const colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71'];
                     drawMagicCircle(startX, startY, 90 * chargeProgress, 'white', `rgba(255, 255, 255, ${0.3 * chargeProgress})`, colors);
                     if (progress > 0.5) {
@@ -2023,15 +2009,15 @@
                             const angle = (i / colors.length) * Math.PI * 2 + progress * 10;
                             const orbitX = projectileX + Math.cos(angle) * 40;
                             const orbitY = projectileY + Math.sin(angle) * 40;
-                            drawElementProjectile(orbitX, orbitY, 25, color); // 크기 증가
+                            drawElementProjectile(orbitX, orbitY, 25, color);
                         });
                     }
                     if (impactProgress > 0) {
                         colors.forEach(color => {
                             const offsetX = (Math.random() - 0.5) * 120;
                             const offsetY = (Math.random() - 0.5) * 120;
-                            drawExplosion(endX + offsetX, endY + offsetY, 180 * impactProgress, color, color); // 폭발 크기 증가
-                            if (Math.random() < impactProgress * 4) { // 연쇄 폭발 효과
+                            drawExplosion(endX + offsetX, endY + offsetY, 180 * impactProgress, color, color);
+                            if (Math.random() < impactProgress * 4) {
                                 effectParticles.push({ type: 'secondary_explosion', x: endX + (Math.random()-0.5)*200, y: endY + (Math.random()-0.5)*200, life: 0.6, maxLife: 0.6, radius: 120, color: color });
                             }
                         });
@@ -2039,7 +2025,7 @@
                 }
             }
             ctx.shadowBlur = 0;
-            if (progress >= 1) canvas.style.transform = 'none'; // Reset screenshake
+            if (progress >= 1) canvas.style.transform = 'none';
         }
         
         function drawUltimateAttack() {
@@ -2051,10 +2037,10 @@
 
             if (gameState.player.class === '전사') {
                 if (level < 5) {
-                     if (level <= 2) { // Lv 1, 2
+                     if (level <= 2) {
                          if (progress > 0.1 && progress < 0.8) drawRandomSlash(level + 1, 180 + level * 40, level === 2 ? '#ffdd00' : 'white');
                          if (progress > 0.8) drawFinalSlash(progress, level === 2 ? '#ffdd00' : '#aaa', 200 + level * 50);
-                     } else if (level === 3) { // Lv 3: 검의 비 + 종단 참격
+                     } else if (level === 3) {
                          if (Math.random() < progress * 5) {
                              const sx = Math.random() * canvas.width;
                              const ex = sx + (Math.random() - 0.5) * 50;
@@ -2062,8 +2048,8 @@
                              effectParticles.push({ type: 'falling_weapon', sx: sx, sy: -50, ex: ex, ey: ey, life: 1, maxLife: 1, weapon: 'sword' });
                          }
                          if (progress > 0.1 && progress < 0.9) drawRandomSlash(5, 250, '#aaa');
-                         if (progress > 0.7) drawFinalSlash(progress, '#ff4400', 350, false, true); // 종단 참격
-                     } else if (level === 4) { // Lv 4: 병기 폭풍 + 종/횡단 참격
+                         if (progress > 0.7) drawFinalSlash(progress, '#ff4400', 350, false, true);
+                     } else if (level === 4) {
                          if (Math.random() < progress * 7) {
                              const weaponTypes = ['sword', 'spear', 'arrow'];
                              const weapon = weaponTypes[Math.floor(Math.random() * weaponTypes.length)];
@@ -2073,16 +2059,15 @@
                              effectParticles.push({ type: 'falling_weapon', sx: sx, sy: -50, ex: ex, ey: ey, life: 1, maxLife: 1, weapon: weapon });
                          }
                          if (progress > 0.1 && progress < 0.9) drawRandomSlash(7, 300, 'cyan');
-                         if (progress > 0.6) drawFinalSlash(progress, 'cyan', 450, true, true); // 종/횡단 참격
+                         if (progress > 0.6) drawFinalSlash(progress, 'cyan', 450, true, true);
                      }
-                } else { // Lv 5: 차원 붕괴
-                    const p1 = Math.min(1, progress / 0.7); // 무수한 참격 및 병기
-                    const p2 = Math.max(0, (progress - 0.5) / 0.5); // 심판의 검
-                    const p3 = Math.max(0, (progress - 0.8) / 0.2); // 최후의 일격
+                } else { // Lv 5: 카오스 엣지: 디멘션 브레이크
+                    const p1 = Math.min(1, progress / 0.7);
+                    const p2 = Math.max(0, (progress - 0.5) / 0.5);
+                    const p3 = Math.max(0, (progress - 0.8) / 0.2);
 
-                    // 1. 무수한 참격과 병기
                     if (p1 > 0.1 && p1 < 0.95) {
-                        drawRandomSlash(10, 400, `hsl(${Math.random()*60 + 240}, 100%, 70%)`);
+                        drawRandomSlash(10, 400, `hsl(${Math.random()*60 + 280}, 100%, 70%)`);
                         if (Math.random() < p1 * 10) {
                             const weaponTypes = ['sword', 'spear', 'axe', 'mace'];
                             const weapon = weaponTypes[Math.floor(Math.random() * weaponTypes.length)];
@@ -2094,14 +2079,12 @@
                         }
                     }
                     
-                    // 2. 심판의 검
-                    drawJudgmentSword(p2);
+                    drawJudgmentSword(p2, '#e74c3c', '#2c3e50');
 
-                    // 3. 최후의 일격 (화면 전체 차원 베기)
                     if (p3 > 0) {
                         const slashP = Math.sin(p3 * Math.PI);
-                        drawDimensionalSlash(canvas.width / 2, canvas.height / 2, canvas.width * 1.5, `rgba(255, 255, 255, ${slashP})`);
-                        drawVortex(canvas.width / 2, canvas.height / 2, canvas.width * p3, p3);
+                        drawDimensionalSlash(canvas.width / 2, canvas.height / 2, canvas.width * 1.5, `rgba(44, 62, 80, ${slashP})`, `rgba(231, 76, 60, ${slashP})`);
+                        drawVortex(canvas.width / 2, canvas.height / 2, canvas.width * p3, p3, '#2c3e50', '#e74c3c');
                         const shake = 40 * slashP;
                         canvas.style.transform = `translate(${Math.random() * shake - shake/2}px, ${Math.random() * shake - shake/2}px)`;
                     }
@@ -2110,11 +2093,14 @@
                 if (level <= 3) {
                     const effects = [drawIceRain, drawTornado, drawMultiLightning];
                     effects[level - 1](progress);
-                } else if (level === 4) {
+                } else if (level === 4) { // Lv 4: 유성우 + 피니시
                     drawMeteorShower(progress);
+                    const finalMeteorProgress = Math.max(0, (progress - 0.7) / 0.3);
+                    if (finalMeteorProgress > 0) {
+                        drawFinalMeteor(finalMeteorProgress);
+                    }
                 } else { // Lv 5: 원소의 격류
                     drawGrandElemental(progress);
-                    // 마지막에 모든 원소의 대폭발 추가
                     const explosionProgress = Math.max(0, (progress - 0.8) / 0.2);
                     if (explosionProgress > 0) {
                         drawExplosion(canvas.width / 2, canvas.height / 2, canvas.width * explosionProgress, 'white', 'white');
@@ -2132,33 +2118,39 @@
         }
         
         // --- 신규/수정된 전사 스킬 이펙트 함수 ---
-        function drawDimensionalSlash(x, y, size, color) {
+        function drawDimensionalSlash(x, y, size, color, shadowColor) {
             ctx.save();
             ctx.strokeStyle = color;
-            ctx.lineWidth = size * 0.1;
-            ctx.shadowColor = '#9b59b6';
-            ctx.shadowBlur = size * 0.2;
+            ctx.lineWidth = size * 0.05 + 5; // 더 굵고 날카롭게
+            ctx.shadowColor = shadowColor;
+            ctx.shadowBlur = size * 0.3;
+            
             ctx.beginPath();
-            ctx.moveTo(x - size / 2, y + size / 4);
-            ctx.bezierCurveTo(x - size / 4, y, x + size / 4, y, x + size / 2, y - size / 4);
+            ctx.moveTo(x - size / 2, y);
+            ctx.quadraticCurveTo(x, y, x + size / 2, y);
+            ctx.stroke();
+
+            ctx.lineWidth = size * 0.02 + 2;
+            ctx.strokeStyle = 'white';
             ctx.stroke();
             ctx.restore();
         }
 
-        function drawVortex(x, y, radius, progress) {
+        function drawVortex(x, y, radius, progress, color1, color2) {
             ctx.save();
             ctx.translate(x, y);
             const p = Math.sin(progress * Math.PI);
-            for (let i = 0; i < 50; i++) {
-                const angle = (Date.now() / 10 + i * 25) * 0.1;
-                const r = (i / 50) * radius;
+            for (let i = 0; i < 70; i++) {
+                const angle = (Date.now() / 8 + i * 18) * 0.1;
+                const r = (i / 70) * radius * (1.2 - p);
                 const particleX = Math.cos(angle) * r;
                 const particleY = Math.sin(angle) * r;
-                const dist = (i / 50);
-                ctx.fillStyle = `hsl(${280 + dist * 50}, 100%, ${50 + dist * 50}%)`;
-                ctx.globalAlpha = (1 - dist) * p;
+                const dist = (i / 70);
+                
+                ctx.fillStyle = i % 2 === 0 ? color1 : color2;
+                ctx.globalAlpha = (1 - dist) * p * 1.5;
                 ctx.beginPath();
-                ctx.arc(particleX, particleY, (1 - dist) * radius * 0.1, 0, Math.PI * 2);
+                ctx.arc(particleX, particleY, (1 - dist) * radius * 0.08, 0, Math.PI * 2);
                 ctx.fill();
             }
             ctx.restore();
@@ -2195,9 +2187,8 @@
             const finalSlashSize = size * Math.min(1, p * 2);
 
             if (isVertical) {
-                // 종단
                 drawSharpSlash(0, 0, finalSlashSize * 1.5, finalSlashSize * 0.2, alpha, color, 'white', 50, 40, 90);
-                if (hasAura) { // 횡단 추가
+                if (hasAura) {
                     drawSharpSlash(0, 0, finalSlashSize * 1.5, finalSlashSize * 0.2, alpha, 'white', color, 50, 25, 0);
                 }
             } else {
@@ -2209,9 +2200,9 @@
             ctx.restore();
         }
 
-        function drawJudgmentSword(progress) {
-            const p = (progress - 0.5) / 0.5; // Starts at 50% progress
-            if (p < 0) return;
+        function drawJudgmentSword(progress, color1, color2) {
+            const p = Math.min(1, progress / 0.8);
+            if (p <= 0) return;
 
             const fallProgress = Math.min(1, p / 0.7);
             const impactProgress = Math.max(0, (p - 0.7) / 0.3);
@@ -2219,15 +2210,14 @@
             const swordSize = canvas.width * 0.8;
             const startY = -swordSize;
             const endY = canvas.height / 2 - swordSize * 0.3;
-            const currentY = startY + (endY - startY) * (1 - Math.pow(1 - fallProgress, 4)); // EaseOutQuad
+            const currentY = startY + (endY - startY) * (1 - Math.pow(1 - fallProgress, 4));
 
-            // Draw Sword
             ctx.save();
             ctx.translate(canvas.width / 2, currentY);
-            ctx.fillStyle = `rgba(220, 220, 255, ${Math.sin(fallProgress * Math.PI)})`;
-            ctx.shadowColor = 'cyan';
+            ctx.fillStyle = `rgba(44, 62, 80, ${Math.sin(fallProgress * Math.PI)})`;
+            ctx.shadowColor = color1;
             ctx.shadowBlur = 50;
-            // Blade
+            
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(-swordSize * 0.1, swordSize * 0.7);
@@ -2235,15 +2225,14 @@
             ctx.lineTo(swordSize * 0.1, swordSize * 0.7);
             ctx.closePath();
             ctx.fill();
-            // Hilt
-            ctx.fillStyle = 'gold';
+            
+            ctx.fillStyle = color2;
             ctx.fillRect(-swordSize * 0.2, swordSize * 0.65, swordSize * 0.4, swordSize * 0.05);
             ctx.restore();
 
-            // Impact
             if (impactProgress > 0) {
                 const shockwaveAlpha = Math.sin(impactProgress * Math.PI);
-                ctx.strokeStyle = `rgba(255, 255, 255, ${shockwaveAlpha})`;
+                ctx.strokeStyle = `rgba(231, 76, 60, ${shockwaveAlpha})`;
                 ctx.lineWidth = 20 * (1 - impactProgress);
                 ctx.beginPath();
                 ctx.arc(canvas.width / 2, endY + swordSize, canvas.width * impactProgress, 0, Math.PI * 2);
@@ -2294,11 +2283,9 @@
             ctx.save();
             ctx.translate(x, y);
             
-            // Glow
             ctx.shadowColor = glowColor;
             ctx.shadowBlur = radius * 0.8;
             
-            // Outer rings
             ctx.strokeStyle = color;
             ctx.lineWidth = radius * 0.05;
             ctx.beginPath();
@@ -2310,30 +2297,35 @@
             ctx.arc(0, 0, radius * 0.8, 0, Math.PI * 2);
             ctx.stroke();
 
-            // Rotating segments
             const time = Date.now() / 1000;
             if (segmentColors.length > 0) {
                 segmentColors.forEach((segColor, i) => {
                     ctx.strokeStyle = segColor;
+                    ctx.shadowColor = segColor;
+                    ctx.shadowBlur = 15;
+                    ctx.lineWidth = radius * 0.04;
                     ctx.beginPath();
-                    ctx.arc(0, 0, radius * 0.9, time + i * Math.PI * 2 / segmentColors.length, time + (i + 0.5) * Math.PI * 2 / segmentColors.length);
+                    const startAngle = time * (i % 2 === 0 ? 1 : -1) + i * Math.PI * 2 / segmentColors.length;
+                    ctx.arc(0, 0, radius * (0.9 - (i%2)*0.15), startAngle, startAngle + Math.PI / segmentColors.length);
                     ctx.stroke();
                 });
             }
 
-            // Runes
             ctx.fillStyle = color;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 10;
             ctx.font = `${radius * 0.2}px 'Cinzel Decorative'`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
+            const runes = ['🔥', '❄️', '⚡️', '🌪️', '🌍', '💧'];
             for (let i = 0; i < 6; i++) {
-                const angle = i * (Math.PI / 3) + time;
+                const angle = i * (Math.PI / 3) + time * (i % 2 === 0 ? -0.5 : 0.5);
                 const runeX = Math.cos(angle) * radius * 0.6;
                 const runeY = Math.sin(angle) * radius * 0.6;
                 ctx.save();
                 ctx.translate(runeX, runeY);
                 ctx.rotate(angle + Math.PI / 2);
-                ctx.fillText('※', 0, 0);
+                ctx.fillText(runes[i], 0, 0);
                 ctx.restore();
             }
             
@@ -2342,7 +2334,6 @@
 
         function drawMeteorProjectile(x, y, size) {
             ctx.save();
-            // Core
             const grad = ctx.createRadialGradient(x, y, 0, x, y, size);
             grad.addColorStop(0, 'white');
             grad.addColorStop(0.3, '#ffcc00');
@@ -2353,7 +2344,6 @@
             ctx.arc(x, y, size, 0, Math.PI * 2);
             ctx.fill();
 
-            // Rocky texture
             ctx.fillStyle = 'rgba(50, 30, 20, 0.7)';
             for (let i = 0; i < 5; i++) {
                 const angle = Math.random() * Math.PI * 2;
@@ -2364,7 +2354,6 @@
                 ctx.fill();
             }
 
-            // Fire trail
             if (Math.random() > 0.2) {
                 effectParticles.push({ type: 'ember', x: x, y: y, vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4, life: 0.4, size: Math.random() * 5 + 2 });
             }
@@ -2378,10 +2367,10 @@
             ctx.shadowBlur = 15;
             
             switch(color) {
-                case '#e74c3c': // Fire
+                case '#e74c3c':
                     drawMeteorProjectile(x, y, size);
                     break;
-                case '#3498db': // Ice
+                case '#3498db':
                     ctx.beginPath();
                     for(let i=0; i<5; i++){
                         const angle = i * (Math.PI * 2 / 5);
@@ -2391,7 +2380,7 @@
                     ctx.closePath();
                     ctx.fill();
                     break;
-                case '#f1c40f': // Lightning
+                case '#f1c40f':
                     ctx.strokeStyle = color;
                     ctx.lineWidth = 3;
                     ctx.beginPath();
@@ -2402,7 +2391,7 @@
                     }
                     ctx.stroke();
                     break;
-                case '#2ecc71': // Wind
+                case '#2ecc71':
                     ctx.strokeStyle = color;
                     ctx.lineWidth = 4;
                     ctx.beginPath();
@@ -2437,10 +2426,8 @@
             const chargeProgress = Math.min(1, progress / 0.4);
             const rainProgress = Math.max(0, (progress - 0.3) / 0.7);
 
-            // 1. 화면을 꽉 채우는 붉은 마법진
             drawMagicCircle(canvas.width / 2, canvas.height / 2, canvas.width * 0.6 * chargeProgress, '#e74c3c', `rgba(255, 0, 0, ${0.5 * chargeProgress})`);
 
-            // 2. 메테오 낙하
             if (rainProgress > 0 && Math.random() < rainProgress * 5) {
                 const startX = Math.random() * canvas.width * 1.5 - canvas.width * 0.25;
                 const endX = Math.random() * canvas.width;
@@ -2449,15 +2436,32 @@
             }
         }
 
+        function drawFinalMeteor(progress) {
+            const fallProgress = Math.min(1, progress / 0.7);
+            const impactProgress = Math.max(0, (progress - 0.7) / 0.3);
+
+            const size = 200;
+            const startY = -size;
+            const endY = canvas.height * 0.5;
+            const currentY = startY + (endY - startY) * (1 - Math.pow(1 - fallProgress, 4));
+
+            drawMeteorProjectile(canvas.width / 2, currentY, size);
+
+            if (impactProgress > 0) {
+                const p = Math.sin(impactProgress * Math.PI);
+                drawExplosion(canvas.width / 2, endY, canvas.width * p, '#ff4500', 'red');
+                const shake = 30 * p;
+                canvas.style.transform = `translate(${Math.random() * shake - shake/2}px, ${Math.random() * shake - shake/2}px)`;
+            }
+        }
+
         function drawGrandElemental(progress) {
             const chargeProgress = Math.min(1, progress / 0.5);
             const rainProgress = Math.max(0, (progress - 0.4) / 0.6);
-            const colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71']; // 불, 냉기, 번개, 바람
+            const colors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71'];
 
-            // 1. 모든 원소 색의 마법진
             drawMagicCircle(canvas.width / 2, canvas.height / 2, canvas.width * 0.7 * chargeProgress, 'white', `rgba(255, 255, 255, ${0.3 * chargeProgress})`, colors);
             
-            // 2. 모든 원소 공격 낙하 및 폭발
             if (rainProgress > 0 && Math.random() < rainProgress * 8) {
                 const type = colors[Math.floor(Math.random() * colors.length)];
                 const startX = Math.random() * canvas.width;
@@ -2585,19 +2589,19 @@
             ctx.lineWidth = 2;
             switch (type) {
                 case 'sword':
-                    ctx.fillRect(-size * 0.1, -size * 0.8, size * 0.2, size); // blade
+                    ctx.fillRect(-size * 0.1, -size * 0.8, size * 0.2, size);
                     ctx.fillStyle = '#8B4513';
-                    ctx.fillRect(-size * 0.2, -size * 0.1, size * 0.4, size * 0.1); // hilt
+                    ctx.fillRect(-size * 0.2, -size * 0.1, size * 0.4, size * 0.1);
                     break;
                 case 'spear':
-                    ctx.fillRect(-size * 0.05, -size, size * 0.1, size * 1.2); // shaft
-                    ctx.beginPath(); // head
+                    ctx.fillRect(-size * 0.05, -size, size * 0.1, size * 1.2);
+                    ctx.beginPath();
                     ctx.moveTo(0, -size); ctx.lineTo(-size * 0.15, -size * 0.8); ctx.lineTo(size * 0.15, -size * 0.8);
                     ctx.closePath(); ctx.fill();
                     break;
                 case 'arrow':
-                    ctx.fillRect(-size * 0.03, -size * 0.8, size * 0.06, size); // shaft
-                    ctx.beginPath(); // head
+                    ctx.fillRect(-size * 0.03, -size * 0.8, size * 0.06, size);
+                    ctx.beginPath();
                     ctx.moveTo(0, -size * 0.8); ctx.lineTo(-size * 0.1, -size * 0.7); ctx.lineTo(size * 0.1, -size * 0.7);
                     ctx.closePath(); ctx.fill();
                     break;
@@ -2608,13 +2612,13 @@
                     ctx.stroke();
                     break;
                 case 'mace':
-                    ctx.fillRect(-size * 0.1, -size * 0.5, size * 0.2, size * 0.6); // handle
+                    ctx.fillRect(-size * 0.1, -size * 0.5, size * 0.2, size * 0.6);
                     ctx.beginPath();
-                    ctx.arc(0, -size * 0.5, size / 4, 0, Math.PI * 2); // head
+                    ctx.arc(0, -size * 0.5, size / 4, 0, Math.PI * 2);
                     ctx.fill();
                     break;
                 case 'axe':
-                    ctx.fillRect(-size * 0.1, -size * 0.5, size * 0.2, size); // handle
+                    ctx.fillRect(-size * 0.1, -size * 0.5, size * 0.2, size);
                     ctx.beginPath();
                     ctx.arc(-size * 0.1, -size * 0.5, size/2, -Math.PI/2, Math.PI/2);
                     ctx.closePath();
@@ -2740,14 +2744,10 @@
             const quizHeight = quizContainer.offsetHeight;
             if (show) {
                 quizContainer.style.display = 'flex';
-                // 퀴즈 컨테이너가 나타날 때 버튼 위치 조정
                 fixedButtonsContainer.style.bottom = `${quizHeight + 15}px`;
-                failsafeContainer.style.bottom = `${quizHeight + 15}px`;
             } else {
                 quizContainer.style.display = 'none';
-                // 퀴즈 컨테이너가 사라질 때 버튼 위치 원상복구
                 fixedButtonsContainer.style.bottom = '15px';
-                failsafeContainer.style.bottom = '15px';
             }
         }
 
